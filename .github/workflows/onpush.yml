@@ -14,12 +14,27 @@ jobs:
     strategy:
       max-parallel: 4
 
-    env:
-      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      DATABRICKS_TOKEN:  ${{ secrets.DATABRICKS_TOKEN }}
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          workload_identity_provider: 'projects/992989886232/locations/global/workloadIdentityPools/dbx-demand-forecast-wip/providers/dbx-demand-forecast-github'
+          service_account: 'dbx-demand-forecast@dbx-demand-forecast.iam.gserviceaccount.com'
+
+      - id: 'secrets'
+        uses: 'google-github-actions/get-secretmanager-secrets@v1'
+        with:
+          secrets: |-
+            databricks_host:dbx-demand-forecast/dbx-demand-forecast-databricks-host
+            databricks_token:dbx-demand-forecast/dbx-demand-forecast-databricks-token
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -42,11 +57,15 @@ jobs:
           pytest tests/unit
 
       - name: Workflow deployment (assets only upload)
+        env:
+          DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
+          DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
           dbx deploy dbx-demand-forecast-sample-etl --assets-only
 
       - name: Run the workflow in a jobless fashion
+        env:
+          DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
+          DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
           dbx launch dbx-demand-forecast-sample-etl --from-assets --trace
-
-
