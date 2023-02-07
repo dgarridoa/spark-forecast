@@ -51,4 +51,3 @@ jobs:
             Release for version ${{ github.ref }}.
           draft: false
           prerelease: false
-

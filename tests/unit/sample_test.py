@@ -5,6 +5,7 @@ from pathlib import Path
 import mlflow
 import logging
 
+
 def test_jobs(spark: SparkSession, tmp_path: Path):
     logging.info("Testing the ETL job")
     common_config = {"database": "default", "table": "sklearn_housing"}
@@ -19,14 +20,12 @@ def test_jobs(spark: SparkSession, tmp_path: Path):
     logging.info("Testing the ML job")
     test_ml_config = {
         "input": common_config,
-        "experiment": "/Shared/dbx-demand-forecast/sample_experiment"
+        "experiment": "/Shared/dbx-demand-forecast/sample_experiment",
     }
     ml_job = SampleMLTask(spark, test_ml_config)
     ml_job.launch()
-    experiment = mlflow.get_experiment_by_name(test_ml_config['experiment'])
+    experiment = mlflow.get_experiment_by_name(test_ml_config["experiment"])
     assert experiment is not None
     runs = mlflow.search_runs(experiment_ids=[experiment.experiment_id])
     assert runs.empty is False
     logging.info("Testing the ML job - done")
-
-

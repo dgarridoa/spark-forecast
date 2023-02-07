@@ -70,7 +70,9 @@ class Task(ABC):
             )
             return {}
         else:
-            self.logger.info(f"Conf file was provided, reading configuration from {conf_file}")
+            self.logger.info(
+                f"Conf file was provided, reading configuration from {conf_file}"
+            )
             return self._read_config(conf_file)
 
     @staticmethod
@@ -93,7 +95,9 @@ class Task(ABC):
         # log parameters
         self.logger.info("Launching job with configuration parameters:")
         for key, item in self.conf.items():
-            self.logger.info("\t Parameter: %-30s with value => %-30s" % (key, item))
+            self.logger.info(
+                "\t Parameter: %-30s with value => %-30s" % (key, item)
+            )
 
     @abstractmethod
     def launch(self):
