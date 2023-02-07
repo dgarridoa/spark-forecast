@@ -10,6 +10,6 @@
         }
     },
     "inplace_jinja_support": false,
-    "failsafe_cluster_reuse_with_assets": false,
+    "failsafe_cluster_reuse_with_assets": true,
     "context_based_upload_for_execute": false
 }
