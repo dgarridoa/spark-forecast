@@ -44,7 +44,13 @@ class DBUtilsFixture:
     def ls(self, path: str):
         _paths = Path(path).glob("*")
         _objects = [
-            FileInfoFixture(str(p.absolute()), p.name, p.stat().st_size, int(p.stat().st_mtime)) for p in _paths
+            FileInfoFixture(
+                str(p.absolute()),
+                p.name,
+                p.stat().st_size,
+                int(p.stat().st_mtime),
+            )
+            for p in _paths
         ]
         return _objects
 
@@ -79,14 +85,20 @@ def spark() -> SparkSession:
     warehouse_dir = tempfile.TemporaryDirectory().name
     _builder = (
         SparkSession.builder.master("local[1]")
-        .config("spark.hive.metastore.warehouse.dir", Path(warehouse_dir).as_uri())
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config(
+            "spark.hive.metastore.warehouse.dir", Path(warehouse_dir).as_uri()
+        )
+        .config(
+            "spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension"
+        )
         .config(
             "spark.sql.catalog.spark_catalog",
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
     )
-    spark: SparkSession = configure_spark_with_delta_pip(_builder).getOrCreate()
+    spark: SparkSession = configure_spark_with_delta_pip(
+        _builder
+    ).getOrCreate()
     logging.info("Spark session configured")
     yield spark
     logging.info("Shutting down Spark session")
@@ -132,6 +144,8 @@ def dbutils_fixture() -> Iterator[None]:
     :return:
     """
     logging.info("Patching the DBUtils object")
-    with patch("dbx_demand_forecast.common.get_dbutils", lambda _: DBUtilsFixture()):
+    with patch(
+        "dbx_demand_forecast.common.get_dbutils", lambda _: DBUtilsFixture()
+    ):
         yield
     logging.info("Test session finished, patching completed")
