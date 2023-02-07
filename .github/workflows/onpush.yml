@@ -40,32 +40,29 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          cache: 'pip' # caching pip dependencies
-          cache-dependency-path: setup.py
 
-      - name: Install pip
-        run: |
-          python -m pip install --upgrade pip
+      - name: Install poetry
+        run: curl -sSL https://install.python-poetry.org | python -
 
       - name: Install dependencies and project in dev mode
         run: |
-          pip install -e ".[local,test]"
+          poetry install --with dev,test
 
       - name: Run unit tests
         run: |
           echo "Launching unit tests"
-          pytest tests/unit
+          poetry run pytest tests/unit
 
       - name: Workflow deployment (assets only upload)
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          dbx deploy dbx-demand-forecast-sample-etl --assets-only
+          poetry run dbx deploy dbx-demand-forecast-sample-etl --assets-only
 
       - name: Run the workflow in a jobless fashion
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          dbx launch dbx-demand-forecast-sample-etl --from-assets --trace
+          poetry run dbx launch dbx-demand-forecast-sample-etl --from-assets --trace

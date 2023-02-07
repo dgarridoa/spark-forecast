@@ -1,3 +1,38 @@
+[tool.poetry]
+name = "dbx_demand_forecast"
+version = "0.1.0"
+description = ""
+authors = ["Diego Alberto Garrido Amaya <diego.garrido.6568@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.10"
+pyyaml = "*"
+
+# there is no need to install them on Databricks, there are already available
+[tool.poetry.group.dev.dependencies]
+pyspark = "3.3.1"
+delta-spark = "2.2.0"
+scikit-learn = "*"
+pandas = "*"
+mlflow = "*"
+black = "^22.3.0"
+flake8 = "6.0.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+coverage ="*"
+pytest-cov = "*"
+dbx = "^0.8.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.mansonry.api"
+
+[tool.poetry.plugins."console_scripts"]
+"etl" = "dbx_demand_forecast.tasks.sample_etl_task:entrypoint"
+"ml" = "dbx_demand_forecast.tasks.sample_ml_task:entrypoint"
+
 [tool.pytest.ini_options]
 addopts = "-s -p no:warnings"
 log_cli = 1
