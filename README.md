@@ -2,30 +2,31 @@
 
 This is a sample project for Databricks, generated via cookiecutter.
 
-While using this project, you need Python 3.X and `pip` or `conda` for package management.
+While using this project, you need Python 3.9 and `poetry` for package management.
 
 ## Local environment setup
 
-1. Instantiate a local Python environment via a tool of your choice. This example is based on `conda`, but you can use any environment management tool:
+1. Install poetry, a python packaging and dependency management.
 ```bash
-conda create -n dbx_demand_forecast python=3.9
-conda activate dbx_demand_forecast
+curl -sSL https://install.python-poetry.org | python -
 ```
 
 2. If you don't have JDK installed on your local machine, install it (in this example we use `conda`-based installation):
 ```bash
-conda install -c conda-forge openjdk=11.0.15
+apt install openjdk-11-jdk
 ```
 
 3. Install project locally (this will also install dev requirements):
 ```bash
-pip install -e ".[local,test]"
+poetry install --with dev,test
 ```
+
+The commands in the following sections can be ran with `poetry run <command>` or exactly as they are from inside a poetry environment activated with `poetry shell`.
 
 ## Running unit tests
 
 For unit testing, please use `pytest`:
-```
+```bash
 pytest tests/unit --cov
 ```
 
@@ -42,12 +43,12 @@ There are two options for running integration tests:
 For quicker startup of the job clusters we recommend using instance pools ([AWS](https://docs.databricks.com/clusters/instance-pools/index.html), [Azure](https://docs.microsoft.com/en-us/azure/databricks/clusters/instance-pools/), [GCP](https://docs.gcp.databricks.com/clusters/instance-pools/index.html)).
 
 For an integration test on all-purpose cluster, use the following command:
-```
+```bash
 dbx execute <workflow-name> --cluster-name=<name of all-purpose cluster>
 ```
 
 To execute a task inside multitask job, use the following command:
-```
+```bash
 dbx execute <workflow-name> \
     --cluster-name=<name of all-purpose cluster> \
     --job=<name of the job to test> \
@@ -55,7 +56,7 @@ dbx execute <workflow-name> \
 ```
 
 For a test on a job cluster, deploy the job assets and then launch a run from them:
-```
+```bash
 dbx deploy <workflow-name> --assets-only
 dbx launch <workflow-name>  --from-assets --trace
 ```
@@ -95,7 +96,7 @@ Please set the following secrets or environment variables for your CI provider:
 
 - To trigger the CI pipeline, simply push your code to the repository. If CI provider is correctly set, it shall trigger the general testing pipeline
 - To trigger the release pipeline, get the current version from the `dbx_demand_forecast/__init__.py` file and tag the current code version:
-```
+```bash
 git tag -a v<your-project-version> -m "Release tag for version <your-project-version>"
 git push origin --tags
 ```
