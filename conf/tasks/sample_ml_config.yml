@@ -1,4 +1,0 @@
-input:
-  database: "default"
-  table: "sklearn_housing"
-experiment: "/Shared/dbx-demand-forecast_experiment"
