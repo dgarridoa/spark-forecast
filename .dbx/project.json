@@ -1,5 +1,29 @@
 {
     "environments": {
+        "dev": {
+            "profile": "dev",
+            "storage_type": "mlflow",
+            "properties": {
+                "workspace_directory": "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast",
+                "artifact_location": "dbfs:/Shared/dbx/projects/dbx_demand_forecast/dev"
+            }
+        },
+        "staging": {
+            "profile": "staging",
+            "storage_type": "mlflow",
+            "properties": {
+                "workspace_directory": "/Shared/dbx/dbx_demand_forecast/staging_dbx_demand_forecast",
+                "artifact_location": "dbfs:/Shared/dbx/projects/dbx_demand_forecast/staging"
+            }
+        },
+        "prod": {
+            "profile": "prod",
+            "storage_type": "mlflow",
+            "properties": {
+                "workspace_directory": "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast",
+                "artifact_location": "dbfs:/Shared/dbx/projects/dbx_demand_forecast/prod"
+            }
+        }
     },
     "inplace_jinja_support": false,
     "failsafe_cluster_reuse_with_assets": true,
