@@ -24,7 +24,8 @@ def get_dbutils(
 
 class Task(ABC):
     """
-    This is an abstract class that provides handy interfaces to implement workloads (e.g. jobs or job tasks).
+    This is an abstract class that provides handy interfaces to implement
+    workloads (e.g. jobs or job tasks).
     Create a child from this class and implement the abstract launch method.
     Class provides access to the following useful objects:
     * self.spark is a SparkSession
@@ -63,6 +64,7 @@ class Task(ABC):
     def _provide_config(self):
         self.logger.info("Reading configuration from --conf-file job option")
         conf_file = self._get_conf_file()
+        env = self._get_env()
         if not conf_file:
             self.logger.info(
                 "No conf file was provided, setting configuration to empty dict."
@@ -73,7 +75,7 @@ class Task(ABC):
             self.logger.info(
                 f"Conf file was provided, reading configuration from {conf_file}"
             )
-            return self._read_config(conf_file)
+            return self._read_config(conf_file, env)
 
     @staticmethod
     def _get_conf_file():
@@ -83,8 +85,18 @@ class Task(ABC):
         return namespace.conf_file
 
     @staticmethod
-    def _read_config(conf_file) -> Dict[str, Any]:
+    def _get_env():
+        p = ArgumentParser()
+        p.add_argument("--env", required=False, type=str)
+        namespace = p.parse_known_args(sys.argv[1:])[0]
+        return namespace.env
+
+    @staticmethod
+    def _read_config(conf_file, env=None) -> Dict[str, Any]:
         config = yaml.safe_load(pathlib.Path(conf_file).read_text())
+        if env:
+            config = config["env"][env]
+            config["env"] = env
         return config
 
     def _prepare_logger(self):
