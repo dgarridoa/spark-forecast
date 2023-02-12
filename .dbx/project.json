@@ -1,13 +1,5 @@
 {
     "environments": {
-        "default": {
-            "profile": "DEFAULT",
-            "storage_type": "mlflow",
-            "properties": {
-                "workspace_directory": "/Shared/dbx/dbx_demand_forecast",
-                "artifact_location": "dbfs:/Shared/dbx/projects/dbx_demand_forecast"
-            }
-        }
     },
     "inplace_jinja_support": false,
     "failsafe_cluster_reuse_with_assets": true,
