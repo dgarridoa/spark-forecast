@@ -1,0 +1,19 @@
+env:
+  dev:
+    experiment: "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast"
+    input:
+      path: "gs://dbx-demand-forecast/prod/sales"
+      sep: ","
+    output:
+      path: "gs://dbx-demand-forecast/prod/input"
+      database: "dev"
+      table: "input"
+  prod:
+    experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
+    input:
+      path: "gs://dbx-demand-forecast/prod/sales"
+    output:
+      path: "gs://dbx-demand-forecast/prod/input"
+      database: "dev"
+      table: "input"
+    database: "prod"
