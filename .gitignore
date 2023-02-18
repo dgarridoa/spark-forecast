@@ -38,3 +38,11 @@ mlruns/
 # Environment variables
 .env
 .env*
+
+# Data
+*.json
+*.crc
+!project.json
+*.csv
+!sales.csv
+*.parquet
