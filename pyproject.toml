@@ -32,8 +32,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.mansonry.api"
 
 [tool.poetry.plugins."console_scripts"]
-"etl" = "dbx_demand_forecast.tasks.sample_etl_task:entrypoint"
-"ml" = "dbx_demand_forecast.tasks.sample_ml_task:entrypoint"
+"ingest" = "dbx_demand_forecast.tasks.ingest:entrypoint"
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib -s -p no:warnings"
