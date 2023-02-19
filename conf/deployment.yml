@@ -3,6 +3,7 @@
 custom:
   basic-cluster-props: &basic-cluster-props
     spark_version: "11.3.x-cpu-ml-scala2.12"
+    policy_id: "cluster-policy://Job Compute Cloud Storage"
 
   basic-static-cluster: &basic-static-cluster
     new_cluster:
