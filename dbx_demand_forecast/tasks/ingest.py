@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import mlflow
 from pyspark.sql.dataframe import DataFrame
 
@@ -10,16 +8,19 @@ from dbx_demand_forecast.utils import read_csv, write_delta_table
 
 class IngestionTask(Task):
     def _read_csv(self) -> DataFrame:
-        path = str(Path(self.conf["input"]["path"]))
-        df = read_csv(self.spark, path, self.conf["input"]["sep"], SalesSchema)
+        df = read_csv(
+            self.spark,
+            self.conf["input"]["path"],
+            self.conf["input"]["sep"],
+            SalesSchema,
+        )
         return df
 
     def _write_delta_table(self, df: DataFrame) -> None:
-        path = str(Path(self.conf["output"]["path"]))
         write_delta_table(
             self.spark,
             df,
-            path,
+            self.conf["output"]["path"],
             InputSchema,
             self.conf["output"]["database"],
             self.conf["output"]["table"],
