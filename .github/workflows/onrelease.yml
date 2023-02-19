@@ -56,7 +56,7 @@ jobs:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          poetry run dbx deploy dbx-demand-forecast-sample-etl
+          poetry run dbx deploy prod-dbx-demand-forecast --environment prod
 
       - name: Create Release
         id: create_release
