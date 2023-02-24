@@ -2,6 +2,7 @@ from pyspark.sql.types import (
     DateType,
     DoubleType,
     IntegerType,
+    StringType,
     StructField,
     StructType,
 )
@@ -21,5 +22,15 @@ InputSchema = StructType(
         StructField("store", IntegerType(), False),
         StructField("item", IntegerType(), False),
         StructField("sales", DoubleType(), False),
+    ]
+)
+
+SplitSchema = StructType(
+    [
+        StructField("date", DateType(), False),
+        StructField("store", IntegerType(), False),
+        StructField("item", IntegerType(), False),
+        StructField("sales", DoubleType(), False),
+        StructField("split", StringType(), False),
     ]
 )
