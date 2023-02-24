@@ -32,6 +32,19 @@ environments:
               - "file:fuse://conf/tasks/ingest_config.yml"
               - "--env"
               - "dev"
+        - task_key: "split"
+          depends_on:
+            - task_key: "ingest"
+          job_cluster_key: "dev"
+          python_wheel_task:
+              package_name: "dbx_demand_forecast"
+              entry_point: "split"
+              parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/split_config.yml"
+              - "--env"
+              - "dev"
+
   prod:
     workflows:
     - name: "prod-dbx-demand-forecast"
@@ -49,3 +62,15 @@ environments:
               - "file:fuse://conf/tasks/ingest_config.yml"
               - "--env"
               - "prod"
+        - task_key: "split"
+          depends_on:
+            - task_key: "ingest"
+          job_cluster_key: "prod"
+          python_wheel_task:
+              package_name: "dbx_demand_forecast"
+              entry_point: "split"
+              parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/split_config.yml"
+              - "--env"
+              - "dev"
