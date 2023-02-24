@@ -44,5 +44,4 @@ mlruns/
 *.crc
 !project.json
 *.csv
-!sales.csv
 *.parquet
