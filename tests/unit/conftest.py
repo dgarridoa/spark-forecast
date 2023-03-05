@@ -95,6 +95,8 @@ def spark() -> SparkSession:
             "spark.sql.catalog.spark_catalog",
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
+        .config("spark.sql.execution.arrow.pyspark.enabled", "true")
+        .config("spark.sql.execution.arrow.pyspark.fallback.enabled", "true")
     )
     spark: SparkSession = configure_spark_with_delta_pip(
         _builder
