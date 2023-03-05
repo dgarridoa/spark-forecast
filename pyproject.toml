@@ -35,6 +35,7 @@ build-backend = "poetry.core.mansonry.api"
 [tool.poetry.plugins."console_scripts"]
 "ingest" = "dbx_demand_forecast.tasks.ingest:entrypoint"
 "split" = "dbx_demand_forecast.tasks.split:entrypoint"
+"naive_model" = "dbx_demand_forecast.tasks.naive_model:entrypoint"
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib -s -p no:warnings"
