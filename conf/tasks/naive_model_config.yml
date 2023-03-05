@@ -1,0 +1,45 @@
+env:
+  dev:
+    experiment: "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast"
+    input:
+      path: "gs://dbx-demand-forecast/dev/split"
+      database: "dev"
+      table: "split"
+    output:
+      forecast_on_test:
+        path: "gs://dbx-demand-forecast/dev/forecast_on_test"
+        database: "dev"
+        table: "forecast_on_test"
+      all_models_forecast:
+        path: "gs://dbx-demand-forecast/dev/all_models_forecast"
+        database: "dev"
+        table: "all_models_forecast"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
+    model_params:
+      K: 12
+    test_size: 90
+    steps: 7
+  prod:
+    experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
+    input:
+      path: "gs://dbx-demand-forecast/prod/split"
+      database: "prod"
+      table: "split"
+    output:
+      forecast_on_test:
+        path: "gs://dbx-demand-forecast/prod/forecast_on_test"
+        database: "prod"
+        table: "forecast_on_test"
+      all_models_forecast:
+        path: "gs://dbx-demand-forecast/prod/all_models_forecast"
+        database: "prod"
+        table: "all_models_forecast"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
+    model_params:
+      K: 12
+    test_size: 90
+    steps: 7
