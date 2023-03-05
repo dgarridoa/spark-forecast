@@ -34,3 +34,13 @@ SplitSchema = StructType(
         StructField("split", StringType(), False),
     ]
 )
+
+ForecastSchema = StructType(
+    [
+        StructField("model", StringType(), False),
+        StructField("store", IntegerType(), False),
+        StructField("item", IntegerType(), False),
+        StructField("date", DateType(), False),
+        StructField("sales", DoubleType(), False),
+    ]
+)
