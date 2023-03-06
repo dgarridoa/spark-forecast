@@ -1,0 +1,67 @@
+env:
+  dev:
+    experiment: "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast"
+    input:
+      split:
+        path: "gs://dbx-demand-forecast/dev/split"
+        database: "dev"
+        table: "split"
+      forecast_on_test:
+        path: "gs://dbx-demand-forecast/dev/forecast_on_test"
+        database: "dev"
+        table: "forecast_on_test"
+      all_models_forecast:
+        path: "gs://dbx-demand-forecast/dev/all_models_forecast"
+        database: "dev"
+        table: "all_models_forecast"
+    output:
+      metrics:
+        path: "gs://dbx-demand-forecast/dev/metrics"
+        database: "dev"
+        table: "metrics"
+      best_models:
+        path: "gs://dbx-demand-forecast/dev/best_models"
+        database: "dev"
+        table: "best_models"
+      forecast:
+        path: "gs://dbx-demand-forecast/dev/forecast"
+        database: "dev"
+        table: "forecast"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
+    metrics: ["rmse", "mae"]
+    model_selection_metric: "mae"
+  prod:
+    experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
+    input:
+      split:
+        path: "gs://dbx-demand-forecast/prod/split"
+        database: "prod"
+        table: "split"
+      forecast_on_test:
+        path: "gs://dbx-demand-forecast/prod/forecast_on_test"
+        database: "prod"
+        table: "forecast_on_test"
+      all_models_forecast:
+        path: "gs://dbx-demand-forecast/prod/all_models_forecast"
+        database: "prod"
+        table: "all_models_forecast"
+    output:
+      metrics:
+        path: "gs://dbx-demand-forecast/prod/metrics"
+        database: "prod"
+        table: "metrics"
+      best_models:
+        path: "gs://dbx-demand-forecast/prod/best_models"
+        database: "prod"
+        table: "best_models"
+      forecast:
+        path: "gs://dbx-demand-forecast/prod/forecast"
+        database: "prod"
+        table: "forecast"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
+    metrics: ["rmse", "mae"]
+    model_selection_metric: "mae"
