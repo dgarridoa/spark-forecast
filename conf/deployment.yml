@@ -56,6 +56,18 @@ environments:
             - "file:fuse://conf/tasks/naive_model_config.yml"
             - "--env"
             - "dev"
+        - task_key: "evaluation"
+          depends_on:
+            - task_key: "naive_model"
+          job_cluster_key: "dev"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "evaluation"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/evaluation_config.yml"
+            - "--env"
+            - "dev"
 
   prod:
     workflows:
@@ -96,5 +108,17 @@ environments:
             parameters:
             - "--conf-file"
             - "file:fuse://conf/tasks/naive_model_config.yml"
+            - "--env"
+            - "prod"
+        - task_key: "evaluation"
+          depends_on:
+            - task_key: "naive_model"
+          job_cluster_key: "prod"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "evaluation"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/evaluation_config.yml"
             - "--env"
             - "prod"
