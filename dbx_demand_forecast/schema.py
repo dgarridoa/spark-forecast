@@ -44,3 +44,13 @@ ForecastSchema = StructType(
         StructField("sales", DoubleType(), False),
     ]
 )
+
+MetricsSchema = StructType(
+    [
+        StructField("model", StringType(), False),
+        StructField("store", IntegerType(), False),
+        StructField("item", IntegerType(), False),
+        StructField("metric", StringType(), False),
+        StructField("value", DoubleType(), False),
+    ]
+)
