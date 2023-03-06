@@ -1,5 +1,7 @@
 from typing import Optional
 
+import pandas as pd
+from darts.timeseries import TimeSeries
 from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -43,3 +45,11 @@ def write_delta_table(
         .execute()
     )
     df.write.format("delta").mode("overwrite").save(path)
+
+
+def extract_timeseries_from_pandas_dataframe(
+    df: pd.DataFrame, time_column: str, target_column: str
+) -> TimeSeries:
+    serie = pd.Series(df[target_column], index=pd.to_datetime(df[time_column]))
+    time_serie = TimeSeries.from_series(serie, freq="D")
+    return time_serie
