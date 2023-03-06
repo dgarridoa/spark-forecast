@@ -50,6 +50,8 @@ def write_delta_table(
 def extract_timeseries_from_pandas_dataframe(
     df: pd.DataFrame, time_column: str, target_column: str
 ) -> TimeSeries:
-    serie = pd.Series(df[target_column], index=pd.to_datetime(df[time_column]))
+    serie = pd.Series(
+        df[target_column].values, index=pd.to_datetime(df[time_column])
+    )
     time_serie = TimeSeries.from_series(serie, freq="D")
     return time_serie
