@@ -26,7 +26,7 @@ class SplitTask(Task):
 
     def transform(self, df: DataFrame) -> DataFrame:
         end_test_date = df.agg({"date": "max"}).collect()[0][0]
-        start_test_date = end_test_date - timedelta(self.conf["test_size"])
+        start_test_date = end_test_date - timedelta(self.conf["test_size"] - 1)
         df_split = df.withColumn(
             "split",
             F.when(F.col("date") >= start_test_date, "test").otherwise(
