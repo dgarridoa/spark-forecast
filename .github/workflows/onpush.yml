@@ -1,11 +1,10 @@
 name: CI pipeline
 
 on:
-  push:
+  pull_request:
+    types: [ opened, synchronize ]
     branches:
-      - '**'
-    tags-ignore:
-      - 'v*' # this tag type is used for release pipelines
+      - 'main'
 
 jobs:
   ci-pipeline:
@@ -58,13 +57,13 @@ jobs:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          poetry run dbx deploy dev-dbx-demand-forecast --assets-only \
-          --environment dev
+          poetry run dbx deploy staging-dbx-demand-forecast --assets-only \
+          --environment staging
 
       - name: Run the workflow in a jobless fashion
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          poetry run dbx launch dev-dbx-demand-forecast --from-assets --trace \
-          --environment dev
+          poetry run dbx launch staging-dbx-demand-forecast --from-assets --trace \
+          --environment staging
