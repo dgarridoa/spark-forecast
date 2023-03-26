@@ -57,7 +57,7 @@ jobs:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          poetry run dbx deploy staging-dbx-demand-forecast --assets-only \
+          poetry run dbx deploy staging-dbx-demand-forecast \
           --environment staging
 
       - name: Run the workflow in a jobless fashion
@@ -65,5 +65,5 @@ jobs:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
         run: |
-          poetry run dbx launch staging-dbx-demand-forecast --from-assets --trace \
+          poetry run dbx launch staging-dbx-demand-forecast --trace \
           --environment staging
