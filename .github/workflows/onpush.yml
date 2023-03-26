@@ -41,7 +41,9 @@ jobs:
           python-version: '3.9'
 
       - name: Install poetry
-        run: curl -sSL https://install.python-poetry.org | python -
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+          poetry config installer.modern-installation false
 
       - name: Install dependencies and project in dev mode
         run: |
