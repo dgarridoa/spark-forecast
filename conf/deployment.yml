@@ -69,6 +69,60 @@ environments:
             - "--env"
             - "dev"
 
+  staging:
+    workflows:
+    - name: "staging-dbx-demand-forecast"
+      job_clusters:
+        - job_cluster_key: "staging"
+          <<: *basic-static-cluster
+      tasks:
+        - task_key: "ingest"
+          job_cluster_key: "staging"
+          python_wheel_task:
+              package_name: "dbx_demand_forecast"
+              entry_point: "ingest"
+              parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/ingest_config.yml"
+              - "--env"
+              - "staging"
+        - task_key: "split"
+          depends_on:
+            - task_key: "ingest"
+          job_cluster_key: "staging"
+          python_wheel_task:
+              package_name: "dbx_demand_forecast"
+              entry_point: "split"
+              parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/split_config.yml"
+              - "--env"
+              - "staging"
+        - task_key: "naive_model"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "staging"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "naive_model"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/naive_model_config.yml"
+            - "--env"
+            - "staging"
+        - task_key: "evaluation"
+          depends_on:
+            - task_key: "naive_model"
+          job_cluster_key: "staging"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "evaluation"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/evaluation_config.yml"
+            - "--env"
+            - "staging"
+
   prod:
     workflows:
     - name: "prod-dbx-demand-forecast"
