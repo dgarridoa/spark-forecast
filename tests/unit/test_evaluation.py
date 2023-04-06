@@ -187,9 +187,7 @@ def test_metrics(spark: SparkSession):
 
 
 def test_best_models(spark: SparkSession):
-    df = read_delta_table(
-        spark, path=conf["output"]["best_models"]["path"]
-    )  # .withColumn("value", F.round("value", 3))
+    df = read_delta_table(spark, path=conf["output"]["best_models"]["path"])
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
