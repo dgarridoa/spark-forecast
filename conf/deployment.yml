@@ -22,7 +22,19 @@ environments:
         - job_cluster_key: "dev"
           <<: *basic-static-cluster
       tasks:
+        - task_key: "create_database"
+          job_cluster_key: "dev"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "create_database"
+            parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/create_database_config.yml"
+              - "--env"
+              - "dev"
         - task_key: "ingest"
+          depends_on:
+            - task_key: "create_database"
           job_cluster_key: "dev"
           python_wheel_task:
               package_name: "dbx_demand_forecast"
@@ -76,7 +88,19 @@ environments:
         - job_cluster_key: "staging"
           <<: *basic-static-cluster
       tasks:
+        - task_key: "create_database"
+          job_cluster_key: "staging"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "create_database"
+            parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/create_database_config.yml"
+              - "--env"
+              - "staging"
         - task_key: "ingest"
+          depends_on:
+            - task_key: "create_database"
           job_cluster_key: "staging"
           python_wheel_task:
               package_name: "dbx_demand_forecast"
@@ -130,7 +154,19 @@ environments:
         - job_cluster_key: "prod"
           <<: *basic-static-cluster
       tasks:
+        - task_key: "create_database"
+          job_cluster_key: "prod"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "create_database"
+            parameters:
+              - "--conf-file"
+              - "file:fuse://conf/tasks/create_database_config.yml"
+              - "--env"
+              - "prod"
         - task_key: "ingest"
+          depends_on:
+            - task_key: "create_database"
           job_cluster_key: "prod"
           python_wheel_task:
               package_name: "dbx_demand_forecast"
