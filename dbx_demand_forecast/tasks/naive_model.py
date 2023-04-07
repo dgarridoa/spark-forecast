@@ -51,9 +51,8 @@ class NaiveModel:
         )
         return df
 
-    @classmethod
+    @staticmethod
     def fit_predict(
-        cls,
         df_train: pd.DataFrame,
         steps: int,
         group_columns: list[str],
@@ -61,7 +60,9 @@ class NaiveModel:
         target_column: str,
         model_params: dict,
     ) -> pd.DataFrame:
-        model = cls(group_columns, time_column, target_column, model_params)
+        model = NaiveModel(
+            group_columns, time_column, target_column, model_params
+        )
         model.fit(df_train)
         df_predict = model.predict(steps)
         return df_predict

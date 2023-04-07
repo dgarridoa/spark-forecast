@@ -53,9 +53,8 @@ class Metrics:
         )
         return df_metric
 
-    @classmethod
+    @staticmethod
     def get_metrics(
-        cls,
         metrics: list[Callable[[TimeSeries, TimeSeries], float]],
         df: pd.DataFrame,
         group_columns: list[str],
@@ -64,7 +63,7 @@ class Metrics:
     ) -> pd.DataFrame:
         df_metrics = pd.concat(
             [
-                cls(group_columns, time_column, target_column).evaluate(
+                Metrics(group_columns, time_column, target_column).evaluate(
                     df, metric
                 )
                 for metric in metrics
