@@ -36,7 +36,6 @@ def write_delta_table(
     database: str,
     table: str,
 ) -> None:
-    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {database}")
     (
         DeltaTable.createIfNotExists(spark)
         .tableName(f"{database}.{table}")
