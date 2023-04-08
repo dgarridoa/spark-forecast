@@ -2,33 +2,27 @@ env:
   dev:
     experiment: "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast"
     input:
-      path: "gs://dbx-demand-forecast/dev/input"
       database: "dev"
       table: "input"
     output:
-      path: "gs://dbx-demand-forecast/dev/split"
       database: "dev"
       table: "split"
     test_size: 90
   staging:
     experiment: "/Shared/dbx/dbx_demand_forecast/staging_dbx_demand_forecast"
     input:
-      path: "gs://dbx-demand-forecast/staging/input"
       database: "staging"
       table: "input"
     output:
-      path: "gs://dbx-demand-forecast/staging/split"
       database: "staging"
       table: "split"
     test_size: 90
   prod:
     experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
     input:
-      path: "gs://dbx-demand-forecast/prod/input"
       database: "prod"
       table: "input"
     output:
-      path: "gs://dbx-demand-forecast/prod/split"
       database: "prod"
       table: "split"
     test_size: 90

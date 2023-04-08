@@ -21,17 +21,13 @@ def read_delta_table(
     spark: SparkSession,
     database: Optional[str] = None,
     table: Optional[str] = None,
-    path: Optional[str] = None,
 ) -> DataFrame:
-    if path:
-        return spark.read.format("delta").load(path)
     return spark.read.table(f"{database}.{table}")
 
 
 def write_delta_table(
     spark: SparkSession,
     df: DataFrame,
-    path: str,
     schema: StructType,
     database: str,
     table: str,
@@ -40,10 +36,11 @@ def write_delta_table(
         DeltaTable.createIfNotExists(spark)
         .tableName(f"{database}.{table}")
         .addColumns(schema)
-        .location(path)
         .execute()
     )
-    df.write.format("delta").mode("overwrite").save(path)
+    df.write.format("delta").saveAsTable(
+        f"{database}.{table}", mode="overwrite"
+    )
 
 
 def extract_timeseries_from_pandas_dataframe(

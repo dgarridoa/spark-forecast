@@ -74,7 +74,9 @@ class Metrics:
 
 class EvaluationTask(Task):
     def _read_delta_table(self, input_dict: dict[str, str]) -> DataFrame:
-        df = read_delta_table(self.spark, path=input_dict["path"])
+        df = read_delta_table(
+            self.spark, input_dict["database"], input_dict["table"]
+        )
         return df
 
     def _write_delta_table(
@@ -83,7 +85,6 @@ class EvaluationTask(Task):
         write_delta_table(
             self.spark,
             df,
-            output_dict["path"],
             schema,
             output_dict["database"],
             output_dict["table"],

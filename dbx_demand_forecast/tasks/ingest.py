@@ -20,7 +20,6 @@ class IngestionTask(Task):
         write_delta_table(
             self.spark,
             df,
-            self.conf["output"]["path"],
             InputSchema,
             self.conf["output"]["database"],
             self.conf["output"]["table"],

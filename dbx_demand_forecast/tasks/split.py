@@ -11,14 +11,17 @@ from dbx_demand_forecast.utils import read_delta_table, write_delta_table
 
 class SplitTask(Task):
     def _read_delta_table(self) -> DataFrame:
-        df = read_delta_table(self.spark, path=self.conf["input"]["path"])
+        df = read_delta_table(
+            self.spark,
+            self.conf["input"]["database"],
+            self.conf["input"]["table"],
+        )
         return df
 
     def _write_delta_table(self, df: DataFrame) -> None:
         write_delta_table(
             self.spark,
             df,
-            self.conf["output"]["path"],
             SplitSchema,
             self.conf["output"]["database"],
             self.conf["output"]["table"],

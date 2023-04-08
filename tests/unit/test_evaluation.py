@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import date, timedelta
 
 import mlflow
@@ -21,34 +20,28 @@ conf = {
     "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "input": {
         "split": {
-            "path": "",
             "database": "default",
             "table": "split",
         },
         "forecast_on_test": {
-            "path": "",
             "database": "default",
             "table": "forecast_on_test",
         },
         "all_models_forecast": {
-            "path": "",
             "database": "default",
             "table": "all_models_forecast",
         },
     },
     "output": {
         "metrics": {
-            "path": "",
             "database": "default",
             "table": "metrics",
         },
         "best_models": {
-            "path": "",
             "database": "default",
             "table": "best_models",
         },
         "forecast": {
-            "path": "",
             "database": "default",
             "table": "forecast",
         },
@@ -59,24 +52,6 @@ conf = {
     "metrics": ["rmse", "mae"],
     "model_selection_metric": "mae",
 }
-
-
-def update_conf(spark: SparkSession):
-    warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir")
-    conf["input"]["split"]["path"] = os.path.join(warehouse_dir, "split")
-    conf["input"]["forecast_on_test"]["path"] = os.path.join(
-        warehouse_dir, "forecast_on_test"
-    )
-    conf["input"]["all_models_forecast"]["path"] = os.path.join(
-        warehouse_dir, "all_models_forecast"
-    )
-    conf["output"]["metrics"]["path"] = os.path.join(warehouse_dir, "metrics")
-    conf["output"]["best_models"]["path"] = os.path.join(
-        warehouse_dir, "best_models"
-    )
-    conf["output"]["forecast"]["path"] = os.path.join(
-        warehouse_dir, "forecast"
-    )
 
 
 def create_split_table(spark: SparkSession) -> None:
@@ -96,7 +71,6 @@ def create_split_table(spark: SparkSession) -> None:
     write_delta_table(
         spark,
         df,
-        conf["input"]["split"]["path"],
         SplitSchema,
         conf["input"]["split"]["database"],
         conf["input"]["split"]["table"],
@@ -119,7 +93,6 @@ def create_forecast_on_test_table(spark: SparkSession) -> None:
     write_delta_table(
         spark,
         df,
-        conf["input"]["forecast_on_test"]["path"],
         ForecastSchema,
         conf["input"]["forecast_on_test"]["database"],
         conf["input"]["forecast_on_test"]["table"],
@@ -142,7 +115,6 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
     write_delta_table(
         spark,
         df,
-        conf["input"]["all_models_forecast"]["path"],
         ForecastSchema,
         conf["input"]["all_models_forecast"]["database"],
         conf["input"]["all_models_forecast"]["table"],
@@ -152,7 +124,6 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def launch_evaluation_task(spark: SparkSession):
     logging.info(f"Launching {EvaluationTask.__name__}")
-    update_conf(spark)
     create_split_table(spark)
     create_forecast_on_test_table(spark)
     create_all_models_forecast_table(spark)
@@ -169,7 +140,11 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_metrics(spark: SparkSession):
-    df = read_delta_table(spark, path=conf["output"]["metrics"]["path"])
+    df = read_delta_table(
+        spark,
+        conf["output"]["metrics"]["database"],
+        conf["output"]["metrics"]["table"],
+    )
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -186,7 +161,11 @@ def test_metrics(spark: SparkSession):
 
 
 def test_best_models(spark: SparkSession):
-    df = read_delta_table(spark, path=conf["output"]["best_models"]["path"])
+    df = read_delta_table(
+        spark,
+        conf["output"]["best_models"]["database"],
+        conf["output"]["best_models"]["table"],
+    )
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -203,7 +182,11 @@ def test_best_models(spark: SparkSession):
 
 
 def test_forecast(spark: SparkSession):
-    df = read_delta_table(spark, path=conf["output"]["forecast"]["path"])
+    df = read_delta_table(
+        spark,
+        conf["output"]["forecast"]["database"],
+        conf["output"]["forecast"]["table"],
+    )
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
