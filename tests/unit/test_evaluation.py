@@ -14,6 +14,7 @@ from dbx_demand_forecast.schema import (
 )
 from dbx_demand_forecast.tasks.evaluation import EvaluationTask
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from tests.unit.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
@@ -181,9 +182,7 @@ def test_metrics(spark: SparkSession):
         ),
         schema=MetricsSchema,
     )
-    count_mismatch = df_test.join(df, how="anti").count()
-    assert df.count() == df_test.count()
-    assert count_mismatch == 0
+    assert_pyspark_df_equal(df_test, df)
 
 
 def test_best_models(spark: SparkSession):
@@ -200,10 +199,7 @@ def test_best_models(spark: SparkSession):
         ),
         schema=MetricsSchema,
     )
-
-    count_mismatch = df_test.join(df, how="anti").count()
-    assert df.count() == df_test.count()
-    assert count_mismatch == 0
+    assert_pyspark_df_equal(df_test, df)
 
 
 def test_forecast(spark: SparkSession):
@@ -220,7 +216,4 @@ def test_forecast(spark: SparkSession):
         ),
         schema=ForecastSchema,
     )
-
-    count_mismatch = df_test.join(df, how="anti").count()
-    assert df.count() == df_test.count()
-    assert count_mismatch == 0
+    assert_pyspark_df_equal(df_test, df)

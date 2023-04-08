@@ -10,6 +10,7 @@ from pyspark.sql import SparkSession
 from dbx_demand_forecast.schema import SalesSchema
 from dbx_demand_forecast.tasks.ingest import IngestionTask
 from dbx_demand_forecast.utils import read_delta_table
+from tests.unit.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
@@ -80,5 +81,4 @@ def test_input(spark: SparkSession):
         schema=SalesSchema,
     )
 
-    count_mismatch = df_test.join(df, how="anti").count()
-    assert df.count() == df_test.count() and count_mismatch == 0
+    assert_pyspark_df_equal(df_test, df)
