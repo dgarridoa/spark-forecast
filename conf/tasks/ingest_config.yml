@@ -5,7 +5,6 @@ env:
       path: "gs://dbx-demand-forecast/dev/sales"
       sep: ","
     output:
-      path: "gs://dbx-demand-forecast/dev/input"
       database: "dev"
       table: "input"
   staging:
@@ -14,7 +13,6 @@ env:
       path: "gs://dbx-demand-forecast/staging/sales"
       sep: ","
     output:
-      path: "gs://dbx-demand-forecast/staging/input"
       database: "staging"
       table: "input"
   prod:
@@ -22,6 +20,5 @@ env:
     input:
       path: "gs://dbx-demand-forecast/prod/sales"
     output:
-      path: "gs://dbx-demand-forecast/prod/input"
       database: "prod"
       table: "input"

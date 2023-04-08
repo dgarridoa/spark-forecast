@@ -70,7 +70,11 @@ class NaiveModel:
 
 class NaiveModelTask(Task):
     def _read_delta_table(self) -> DataFrame:
-        df = read_delta_table(self.spark, path=self.conf["input"]["path"])
+        df = read_delta_table(
+            self.spark,
+            self.conf["input"]["database"],
+            self.conf["input"]["table"],
+        )
         return df
 
     def _write_delta_table(
@@ -84,12 +88,12 @@ class NaiveModelTask(Task):
             .tableName(f"{output_dict['database']}.{output_dict['table']}")
             .addColumns(ForecastSchema)
             .partitionedBy("model")
-            .location(output_dict["path"])
             .execute()
         )
+
         df.write.format("delta").mode("overwrite").option(
             "partitionOverwriteMode", "dynamic"
-        ).save(output_dict["path"])
+        ).saveAsTable(f"{output_dict['database']}.{output_dict['table']}")
 
     def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
         group_columns: list[str] = self.conf["group_columns"]

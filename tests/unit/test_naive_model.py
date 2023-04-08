@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import date, timedelta
 
 import mlflow
@@ -16,18 +15,15 @@ conf = {
     "env": "default",
     "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "input": {
-        "path": "",
         "database": "default",
         "table": "split",
     },
     "output": {
         "forecast_on_test": {
-            "path": "",
             "database": "default",
             "table": "forecast_on_test",
         },
         "all_models_forecast": {
-            "path": "",
             "database": "default",
             "table": "all_models_forecast",
         },
@@ -39,17 +35,6 @@ conf = {
     "test_size": 5,
     "steps": 2,
 }
-
-
-def update_conf(spark: SparkSession):
-    warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir")
-    conf["input"]["path"] = os.path.join(warehouse_dir, "split")
-    conf["output"]["forecast_on_test"]["path"] = os.path.join(
-        warehouse_dir, "forecast_on_test"
-    )
-    conf["output"]["all_models_forecast"]["path"] = os.path.join(
-        warehouse_dir, "all_models_forecast"
-    )
 
 
 def create_split_table(spark: SparkSession) -> None:
@@ -71,7 +56,6 @@ def create_split_table(spark: SparkSession) -> None:
     write_delta_table(
         spark,
         df,
-        conf["input"]["path"],
         SplitSchema,
         conf["input"]["database"],
         conf["input"]["table"],
@@ -81,7 +65,6 @@ def create_split_table(spark: SparkSession) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def launch_naive_model_task(spark: SparkSession):
     logging.info(f"Launching {NaiveModelTask.__name__}")
-    update_conf(spark)
     create_split_table(spark)
     ingestion_task = NaiveModelTask(spark, conf)
     ingestion_task.launch()
@@ -97,7 +80,9 @@ def test_mlflow_tracking_server_is_not_empty():
 
 def test_forecast_on_test(spark: SparkSession):
     df = read_delta_table(
-        spark, path=conf["output"]["forecast_on_test"]["path"]
+        spark,
+        conf["output"]["forecast_on_test"]["database"],
+        conf["output"]["forecast_on_test"]["table"],
     )
     df_test = spark.createDataFrame(
         pd.DataFrame(
@@ -119,7 +104,9 @@ def test_forecast_on_test(spark: SparkSession):
 
 def test_all_models_forecast(spark: SparkSession):
     df = read_delta_table(
-        spark, path=conf["output"]["all_models_forecast"]["path"]
+        spark,
+        conf["output"]["all_models_forecast"]["database"],
+        conf["output"]["all_models_forecast"]["table"],
     )
     df_test = spark.createDataFrame(
         pd.DataFrame(

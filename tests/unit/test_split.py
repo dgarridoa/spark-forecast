@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import date, timedelta
 
 import mlflow
@@ -16,23 +15,15 @@ conf = {
     "env": "default",
     "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "input": {
-        "path": "",
         "database": "default",
         "table": "input",
     },
     "output": {
-        "path": "",
         "database": "default",
         "table": "split",
     },
     "test_size": 5,
 }
-
-
-def update_conf(spark: SparkSession):
-    warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir")
-    conf["input"]["path"] = os.path.join(warehouse_dir, "input")
-    conf["output"]["path"] = os.path.join(warehouse_dir, "split")
 
 
 def create_input_table(spark: SparkSession) -> None:
@@ -50,7 +41,6 @@ def create_input_table(spark: SparkSession) -> None:
     write_delta_table(
         spark,
         df,
-        conf["input"]["path"],
         InputSchema,
         conf["input"]["database"],
         conf["input"]["table"],
@@ -60,7 +50,6 @@ def create_input_table(spark: SparkSession) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def launch_split_task(spark: SparkSession):
     logging.info(f"Launching {SplitTask.__name__}")
-    update_conf(spark)
     create_input_table(spark)
     ingestion_task = SplitTask(spark, conf)
     ingestion_task.launch()
@@ -75,7 +64,9 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_split(spark: SparkSession):
-    df = read_delta_table(spark, path=conf["output"]["path"])
+    df = read_delta_table(
+        spark, conf["output"]["database"], conf["output"]["table"]
+    )
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {

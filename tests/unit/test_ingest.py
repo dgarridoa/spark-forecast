@@ -17,7 +17,6 @@ conf = {
     "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "input": {"path": "", "sep": ","},
     "output": {
-        "path": "",
         "database": "default",
         "table": "input",
     },
@@ -27,7 +26,6 @@ conf = {
 def update_conf(spark: SparkSession):
     warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir")
     conf["input"]["path"] = os.path.join(warehouse_dir, "sales")
-    conf["output"]["path"] = os.path.join(warehouse_dir, "input")
 
 
 def create_sales_csv(spark: SparkSession) -> None:
@@ -68,7 +66,9 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_input(spark: SparkSession):
-    df = read_delta_table(spark, path=conf["output"]["path"])
+    df = read_delta_table(
+        spark, conf["output"]["database"], conf["output"]["table"]
+    )
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
