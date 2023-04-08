@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 
 from dbx_demand_forecast.schema import SalesSchema
 from dbx_demand_forecast.tasks.ingest import IngestionTask
-from dbx_demand_forecast.utils import read_csv, read_delta_table
+from dbx_demand_forecast.utils import read_delta_table
 
 conf = {
     "env": "default",
@@ -68,8 +68,17 @@ def test_mlflow_tracking_server_is_not_empty():
 
 def test_input(spark: SparkSession):
     df = read_delta_table(spark, path=conf["output"]["path"])
-    df_test = read_csv(
-        spark, conf["input"]["path"], conf["input"]["sep"], schema=SalesSchema
+    df_test = spark.createDataFrame(
+        pd.DataFrame(
+            {
+                "date": [date(2018, 12, 1) + timedelta(i) for i in range(30)],
+                "store": 1,
+                "item": 1,
+                "sales": map(float, range(1, 31)),
+            }
+        ),
+        schema=SalesSchema,
     )
+
     count_mismatch = df_test.join(df, how="anti").count()
     assert df.count() == df_test.count() and count_mismatch == 0
