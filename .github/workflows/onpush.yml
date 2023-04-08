@@ -54,7 +54,7 @@ jobs:
           echo "Launching unit tests"
           poetry run pytest tests/unit
 
-      - name: Workflow deployment (assets only upload)
+      - name: Deploy the workflow as a job
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
@@ -62,7 +62,7 @@ jobs:
           poetry run dbx deploy staging-dbx-demand-forecast \
           --environment staging
 
-      - name: Run the workflow in a jobless fashion
+      - name: Run the workflow
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.databricks_host }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.databricks_token }}'
