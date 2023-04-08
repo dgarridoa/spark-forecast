@@ -10,6 +10,7 @@ from pyspark.sql import SparkSession
 from dbx_demand_forecast.schema import InputSchema, SplitSchema
 from dbx_demand_forecast.tasks.split import SplitTask
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from tests.unit.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
@@ -90,5 +91,4 @@ def test_split(spark: SparkSession):
         ),
         schema=SplitSchema,
     )
-    count_mismatch = df_test.join(df, how="anti").count()
-    assert df.count() == df_test.count() and count_mismatch == 0
+    assert_pyspark_df_equal(df_test, df)

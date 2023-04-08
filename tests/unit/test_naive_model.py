@@ -10,6 +10,7 @@ from pyspark.sql import SparkSession
 from dbx_demand_forecast.schema import ForecastSchema, SplitSchema
 from dbx_demand_forecast.tasks.naive_model import NaiveModelTask
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from tests.unit.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
@@ -113,11 +114,7 @@ def test_forecast_on_test(spark: SparkSession):
         ),
         schema=ForecastSchema,
     )
-    count_mismatch = (
-        df_test.drop("sales").join(df.drop("sales"), how="anti").count()
-    )
-    assert df.count() == df_test.count()
-    assert count_mismatch == 0
+    assert_pyspark_df_equal(df_test.drop("sales"), df.drop("sales"))
 
 
 def test_all_models_forecast(spark: SparkSession):
@@ -139,8 +136,4 @@ def test_all_models_forecast(spark: SparkSession):
         ),
         schema=ForecastSchema,
     )
-    count_mismatch = (
-        df_test.drop("sales").join(df.drop("sales"), how="anti").count()
-    )
-    assert df.count() == df_test.count()
-    assert count_mismatch == 0
+    assert_pyspark_df_equal(df_test.drop("sales"), df.drop("sales"))
