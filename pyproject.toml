@@ -18,14 +18,18 @@ pyarrow = ">=7.0.0"
 pandas = ">=1.4.3,<2"
 mlflow = "1.29.0"
 mlflow-skinny = "1.29.0"
-black = "^22.3.0"
-flake8 = "6.0.0"
-isort = "5.12.0"
+mypy = "^1.4.1"
+pyright = "^1.1.320"
+black = "^22.12.0"
+flake8 = "^6.1.0"
+isort = "^5.12.0"
+bandit = "^1.7.5"
+pre-commit = "^3.3.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "*"
-coverage ="*"
-pytest-cov = "*"
+pytest = "^7.4.0"
+coverage = "^7.2.7"
+pytest-cov = "^4.1.0"
 dbx = "^0.8.7"
 
 [build-system]
@@ -55,6 +59,9 @@ line-length = 79
 profile = "black"
 multi_line_output = 3
 line_length = 79
+
+[tool.bandit]
+exclude_dirs = ["tests"]
 
 [tool.coverage.run]
 branch = true
