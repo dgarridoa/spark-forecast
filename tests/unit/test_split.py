@@ -74,7 +74,7 @@ def test_split(spark: SparkSession):
                 "store": 1,
                 "item": 1,
                 "sales": map(float, range(1, 31)),
-                "test:": (
+                "split:": (
                     ["train"] * (30 - conf["test_size"])
                     + ["test"] * conf["test_size"]
                 ),
