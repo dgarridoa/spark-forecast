@@ -58,9 +58,9 @@ def create_split_table(spark: SparkSession) -> None:
     df = spark.createDataFrame(
         pd.DataFrame(
             {
-                "date": [date(2018, 12, 1) + timedelta(i) for i in range(10)],
                 "store": 1,
                 "item": 1,
+                "date": [date(2018, 12, 1) + timedelta(i) for i in range(10)],
                 "sales": map(float, range(1, 11)),
                 "split": ["train"] * 8 + ["test"] * 2,
             }

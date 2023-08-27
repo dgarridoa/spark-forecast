@@ -27,9 +27,9 @@ InputSchema = StructType(
 
 SplitSchema = StructType(
     [
-        StructField("date", DateType(), False),
         StructField("store", IntegerType(), False),
         StructField("item", IntegerType(), False),
+        StructField("date", DateType(), False),
         StructField("sales", DoubleType(), False),
         StructField("split", StringType(), False),
     ]
