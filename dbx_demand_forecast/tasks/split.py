@@ -1,15 +1,33 @@
-from datetime import timedelta
+from datetime import date, datetime, timedelta
+from typing import Optional
 
 import mlflow
-import pyspark.sql.functions as F
+from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from dbx_demand_forecast.common import Task
 from dbx_demand_forecast.schema import SplitSchema
+from dbx_demand_forecast.split import Split
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
 
 
 class SplitTask(Task):
+    def __init__(
+        self,
+        spark: Optional[SparkSession] = None,
+        init_conf: Optional[dict] = None,
+    ) -> None:
+        super().__init__(spark, init_conf)
+        if "execution_date" not in self.conf:
+            execution_date = date.today() - timedelta(
+                days=date.today().weekday()
+            )
+        else:
+            execution_date = datetime.strptime(
+                self.conf["execution_date"], "%Y-%m-%d"
+            ).date()
+        self.conf["execution_date"] = execution_date
+
     def _read_delta_table(self) -> DataFrame:
         df = read_delta_table(
             self.spark,
@@ -28,14 +46,16 @@ class SplitTask(Task):
         )
 
     def transform(self, df: DataFrame) -> DataFrame:
-        end_test_date = df.agg({"date": "max"}).collect()[0][0]
-        start_test_date = end_test_date - timedelta(self.conf["test_size"] - 1)
-        df_split = df.withColumn(
-            "split",
-            F.when(F.col("date") >= start_test_date, "test").otherwise(
-                "train"
-            ),
+        split = Split(
+            group_columns=self.conf["group_columns"],
+            time_column=self.conf["time_column"],
+            target_column=self.conf["target_column"],
+            test_size=self.conf["test_size"],
+            execution_date=self.conf["execution_date"],
+            time_delta=self.conf["time_delta"],
+            freq=self.conf["freq"],
         )
+        df_split = split.transform(df, SplitSchema)
         return df_split
 
     def launch(self):
