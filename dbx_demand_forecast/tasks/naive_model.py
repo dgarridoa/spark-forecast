@@ -1,74 +1,34 @@
+from datetime import date, datetime, timedelta
+from typing import Any, Optional
+
 import mlflow
-import pandas as pd
 from darts.models import NaiveDrift, NaiveEnsembleModel, NaiveSeasonal
-from darts.timeseries import TimeSeries
-from delta.tables import DeltaTable
+from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from dbx_demand_forecast.common import Task
+from dbx_demand_forecast.model import DistributedModel
 from dbx_demand_forecast.schema import ForecastSchema
-from dbx_demand_forecast.utils import read_delta_table
-
-
-class NaiveModel:
-    def __init__(
-        self,
-        group_columns: list[str],
-        time_column: str,
-        target_column: str,
-        model_params: dict,
-    ):
-        self.group_columns = group_columns
-        self.time_column = time_column
-        self.target_column = target_column
-        self.model = NaiveEnsembleModel(
-            [NaiveDrift(), NaiveSeasonal(**model_params)]
-        )
-
-    def set_group_columns_values(self, df: pd.DataFrame) -> None:
-        self.group_columns_values = df.loc[0, self.group_columns].to_dict()
-
-    def fit(self, df_train: pd.DataFrame) -> None:
-        self.set_group_columns_values(df_train)
-
-        df_train[self.time_column] = pd.to_datetime(df_train[self.time_column])
-        df_train = df_train.set_index(self.time_column)
-        y_train = TimeSeries.from_series(
-            df_train[self.target_column], freq="D"
-        )
-
-        self.model.fit(y_train)
-
-    def predict(self, steps: int) -> pd.DataFrame:
-        y_predict = self.model.predict(steps).pd_series()
-        df = pd.DataFrame(
-            {
-                "model": self.__class__.__name__,
-                **self.group_columns_values,
-                self.time_column: y_predict.index,
-                self.target_column: y_predict.values,
-            }
-        )
-        return df
-
-    @staticmethod
-    def fit_predict(
-        df_train: pd.DataFrame,
-        steps: int,
-        group_columns: list[str],
-        time_column: str,
-        target_column: str,
-        model_params: dict,
-    ) -> pd.DataFrame:
-        model = NaiveModel(
-            group_columns, time_column, target_column, model_params
-        )
-        model.fit(df_train)
-        df_predict = model.predict(steps)
-        return df_predict
+from dbx_demand_forecast.utils import read_delta_table, write_delta_table
 
 
 class NaiveModelTask(Task):
+    def __init__(
+        self,
+        spark: Optional[SparkSession] = None,
+        init_conf: Optional[dict] = None,
+    ) -> None:
+        super().__init__(spark, init_conf)
+        if "execution_date" not in self.conf:
+            execution_date = date.today() - timedelta(
+                days=date.today().weekday()
+            )
+        else:
+            execution_date = datetime.strptime(
+                self.conf["execution_date"], "%Y-%m-%d"
+            ).date()
+        self.conf["execution_date"] = execution_date
+
     def _read_delta_table(self) -> DataFrame:
         df = read_delta_table(
             self.spark,
@@ -80,37 +40,39 @@ class NaiveModelTask(Task):
     def _write_delta_table(
         self, df: DataFrame, output_dict: dict[str, str]
     ) -> None:
-        self.spark.sql(
-            f"CREATE SCHEMA IF NOT EXISTS {output_dict['database']}"
+        write_delta_table(
+            self.spark,
+            df,
+            ForecastSchema,
+            output_dict["database"],
+            output_dict["table"],
+            ["model"],
         )
-        (
-            DeltaTable.createIfNotExists(self.spark)
-            .tableName(f"{output_dict['database']}.{output_dict['table']}")
-            .addColumns(ForecastSchema)
-            .partitionedBy("model")
-            .execute()
-        )
-
-        df.write.format("delta").mode("overwrite").option(
-            "partitionOverwriteMode", "dynamic"
-        ).saveAsTable(f"{output_dict['database']}.{output_dict['table']}")
 
     def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
         group_columns: list[str] = self.conf["group_columns"]
         time_column: str = self.conf["time_column"]
         target_column: str = self.conf["target_column"]
-        model_params: dict[str, str] = self.conf["model_params"]
+        model_params: dict[str, Any] = self.conf["model_params"]
+        freq: str = self.conf["freq"]
 
-        df_predict = df_train.groupBy(group_columns).applyInPandas(
-            lambda pdf: NaiveModel.fit_predict(
-                df_train=pdf,
-                steps=steps,
-                group_columns=group_columns,
-                time_column=time_column,
-                target_column=target_column,
-                model_params=model_params,
-            ),
-            schema=ForecastSchema,
+        def naive_model() -> NaiveEnsembleModel:
+            return NaiveEnsembleModel(
+                [NaiveDrift(), NaiveSeasonal(**model_params)]
+            )
+
+        distributed_naive_model = DistributedModel(
+            group_columns=group_columns,
+            time_column=time_column,
+            target_column=target_column,
+            model_cls=naive_model,
+            model_params={},
+            freq=freq,
+        )
+        df_predict = distributed_naive_model.fit_predict(
+            df_train=df_train,
+            forecast_schema=ForecastSchema,
+            steps=steps,
         )
         return df_predict
 
