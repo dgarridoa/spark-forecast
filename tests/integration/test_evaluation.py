@@ -13,7 +13,7 @@ from dbx_demand_forecast.schema import (
 )
 from dbx_demand_forecast.tasks.evaluation import EvaluationTask
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
-from tests.unit.utils import assert_pyspark_df_equal
+from tests.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
