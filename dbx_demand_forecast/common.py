@@ -1,3 +1,4 @@
+import copy
 import pathlib
 import sys
 from abc import ABC, abstractmethod
@@ -40,7 +41,7 @@ class Task(ABC):
         self.logger = self._prepare_logger()
         self.dbutils = self.get_dbutils()
         if init_conf:
-            self.conf = init_conf
+            self.conf = copy.deepcopy(init_conf)
         else:
             self.conf = self._provide_config()
         self._log_conf()
