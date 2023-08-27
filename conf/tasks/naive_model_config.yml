@@ -18,6 +18,8 @@ env:
       K: 12
     test_size: 90
     steps: 7
+    execution_date: "2018-01-01"
+    freq: "1D"
   staging:
     experiment: "/Shared/dbx/dbx_demand_forecast/staging_dbx_demand_forecast"
     input:
@@ -37,6 +39,8 @@ env:
       K: 12
     test_size: 90
     steps: 7
+    execution_date: "2018-01-01"
+    freq: "1D"
   prod:
     experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
     input:
@@ -56,3 +60,5 @@ env:
       K: 12
     test_size: 90
     steps: 7
+    execution_date: "2018-01-01"
+    freq: "1D"

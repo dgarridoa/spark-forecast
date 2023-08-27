@@ -34,6 +34,8 @@ conf = {
     "model_params": {"K": 1},
     "test_size": 5,
     "steps": 2,
+    "execution_date": "2018-12-31",
+    "freq": "1D",
 }
 
 
