@@ -51,6 +51,8 @@ conf = {
     "target_column": "sales",
     "metrics": ["rmse", "mae"],
     "model_selection_metric": "mae",
+    "execution_date": "2018-12-31",
+    "freq": "1D",
 }
 
 
