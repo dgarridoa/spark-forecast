@@ -31,16 +31,31 @@ def write_delta_table(
     schema: StructType,
     database: str,
     table: str,
+    partition_cols: Optional[list[str]] = None,
 ) -> None:
-    (
-        DeltaTable.createIfNotExists(spark)
-        .tableName(f"{database}.{table}")
-        .addColumns(schema)
-        .execute()
-    )
-    df.write.format("delta").saveAsTable(
-        f"{database}.{table}", mode="overwrite"
-    )
+    if partition_cols:
+        (
+            DeltaTable.createIfNotExists(spark)
+            .tableName(f"{database}.{table}")
+            .addColumns(schema)
+            .partitionedBy(partition_cols)
+            .execute()
+        )
+        df.write.format("delta").partitionBy(*partition_cols).mode(
+            "overwrite"
+        ).option("partitionOverwriteMode", "dynamic").saveAsTable(
+            f"{database}.{table}"
+        )
+    else:
+        (
+            DeltaTable.createIfNotExists(spark)
+            .tableName(f"{database}.{table}")
+            .addColumns(schema)
+            .execute()
+        )
+        df.write.format("delta").saveAsTable(
+            f"{database}.{table}", mode="overwrite"
+        )
 
 
 def extract_timeseries_from_pandas_dataframe(
