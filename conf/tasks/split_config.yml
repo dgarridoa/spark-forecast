@@ -7,7 +7,13 @@ env:
     output:
       database: "dev"
       table: "split"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
     test_size: 90
+    execution_date: "2018-01-01"
+    time_delta: 727
+    freq: "1D"
   staging:
     experiment: "/Shared/dbx/dbx_demand_forecast/staging_dbx_demand_forecast"
     input:
@@ -16,7 +22,13 @@ env:
     output:
       database: "staging"
       table: "split"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
     test_size: 90
+    execution_date: "2018-01-01"
+    time_delta: 727
+    freq: "1D"
   prod:
     experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
     input:
@@ -25,4 +37,10 @@ env:
     output:
       database: "prod"
       table: "split"
+    group_columns: ["store", "item"]
+    time_column: "date"
+    target_column: "sales"
     test_size: 90
+    execution_date: "2018-01-01"
+    time_delta: 727
+    freq: "1D"
