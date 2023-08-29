@@ -32,6 +32,7 @@ pytest = "^7.4.0"
 coverage = "^7.2.7"
 pytest-cov = "^4.1.0"
 dbx = "^0.8.7"
+pydantic = "<2.0.0"
 
 [build-system]
 requires = ["poetry-core"]
