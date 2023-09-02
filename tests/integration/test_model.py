@@ -4,10 +4,11 @@ from datetime import date, timedelta
 import mlflow
 import pandas as pd
 import pytest
+from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
 
 from dbx_demand_forecast.schema import ForecastSchema, SplitSchema
-from dbx_demand_forecast.tasks.naive_model import NaiveModelTask
+from dbx_demand_forecast.tasks.model import ModelTask
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
 from tests.utils import assert_pyspark_df_equal
 
@@ -31,7 +32,7 @@ conf = {
     "group_columns": ["store", "item"],
     "time_column": "date",
     "target_column": "sales",
-    "model_params": {"K": 1},
+    "model_params": {"seasonal_periods": 7},
     "test_size": 5,
     "steps": 2,
     "execution_date": "2018-12-31",
@@ -65,12 +66,12 @@ def create_split_table(spark: SparkSession) -> None:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def launch_naive_model_task(spark: SparkSession):
-    logging.info(f"Launching {NaiveModelTask.__name__}")
+def launch_model_task(spark: SparkSession):
     create_split_table(spark)
-    ingestion_task = NaiveModelTask(spark, conf)
-    ingestion_task.launch()
-    logging.info(f"Launching the {NaiveModelTask.__name__} - done")
+    logging.info(f"Launching {ModelTask.__name__}")
+    task = ModelTask(spark, conf)
+    task.launch(ExponentialSmoothing)
+    logging.info(f"Launching the {ModelTask.__name__} - done")
 
 
 def test_mlflow_tracking_server_is_not_empty():
@@ -89,7 +90,7 @@ def test_forecast_on_test(spark: SparkSession):
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
-                "model": NaiveModelTask.__name__,
+                "model": ExponentialSmoothing.__name__,
                 "store": 1,
                 "item": 1,
                 "date": [
@@ -113,7 +114,7 @@ def test_all_models_forecast(spark: SparkSession):
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
-                "model": NaiveModelTask.__name__,
+                "model": ExponentialSmoothing.__name__,
                 "store": 1,
                 "item": 1,
                 "date": [

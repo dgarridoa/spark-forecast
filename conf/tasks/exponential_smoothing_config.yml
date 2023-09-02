@@ -15,7 +15,7 @@ env:
     time_column: "date"
     target_column: "sales"
     model_params:
-      K: 12
+      seasonal_periods: 7
     test_size: 90
     steps: 7
     execution_date: "2018-01-01"
@@ -36,7 +36,7 @@ env:
     time_column: "date"
     target_column: "sales"
     model_params:
-      K: 12
+      seasonal_periods: 7
     test_size: 90
     steps: 7
     execution_date: "2018-01-01"
@@ -57,7 +57,7 @@ env:
     time_column: "date"
     target_column: "sales"
     model_params:
-      K: 12
+      seasonal_periods: 7
     test_size: 90
     steps: 7
     execution_date: "2018-01-01"

@@ -1,18 +1,18 @@
 from datetime import date, datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 import mlflow
-from darts.models import NaiveDrift, NaiveEnsembleModel, NaiveSeasonal
+from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from dbx_demand_forecast.common import Task
-from dbx_demand_forecast.model import DistributedModel
+from dbx_demand_forecast.model import DistributedModel, ModelProtocol
 from dbx_demand_forecast.schema import ForecastSchema
 from dbx_demand_forecast.utils import read_delta_table, write_delta_table
 
 
-class NaiveModelTask(Task):
+class ModelTask(Task):
     def __init__(
         self,
         spark: Optional[SparkSession] = None,
@@ -49,47 +49,45 @@ class NaiveModelTask(Task):
             ["model"],
         )
 
-    def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
+    def fit_predict(
+        self, model_cls: Type[ModelProtocol], df_train: DataFrame, steps: int
+    ) -> DataFrame:
         group_columns: list[str] = self.conf["group_columns"]
         time_column: str = self.conf["time_column"]
         target_column: str = self.conf["target_column"]
         model_params: dict[str, Any] = self.conf["model_params"]
         freq: str = self.conf["freq"]
 
-        def naive_model() -> NaiveEnsembleModel:
-            return NaiveEnsembleModel(
-                [NaiveDrift(), NaiveSeasonal(**model_params)]
-            )
-
-        distributed_naive_model = DistributedModel(
+        distributed_model = DistributedModel(
             group_columns=group_columns,
             time_column=time_column,
             target_column=target_column,
-            model_cls=naive_model,
-            model_params={},
+            model_cls=model_cls,
+            model_params=model_params,
             freq=freq,
         )
-        df_predict = distributed_naive_model.fit_predict(
+        df_predict = distributed_model.fit_predict(
             df_train=df_train,
             forecast_schema=ForecastSchema,
             steps=steps,
         )
         return df_predict
 
-    def launch(self):
-        self.logger.info(f"Launching {self.__class__.__name__}")
+    def launch(self, model_cls: Type[ModelProtocol]):
+        run_name = f"{self.__class__.__name__}[{model_cls.__name__}]"
+        self.logger.info(f"Launching {run_name}")
 
         mlflow.set_experiment(self.conf["experiment"])
-        with mlflow.start_run(run_name=self.__class__.__name__):
+        with mlflow.start_run(run_name=run_name):
             mlflow.set_tags(self.conf)
 
         df = self._read_delta_table()
         df_train = df.filter(df["split"] == "train")
 
         df_forecast_on_test = self.fit_predict(
-            df_train, self.conf["test_size"]
+            model_cls, df_train, self.conf["test_size"]
         )
-        df_forecast = self.fit_predict(df, self.conf["steps"])
+        df_forecast = self.fit_predict(model_cls, df, self.conf["steps"])
 
         self._write_delta_table(
             df_forecast_on_test, self.conf["output"]["forecast_on_test"]
@@ -99,10 +97,6 @@ class NaiveModelTask(Task):
         )
 
 
-def entrypoint():
-    task = NaiveModelTask()
-    task.launch()
-
-
-if __name__ == "__main__":
-    entrypoint()
+def exponential_smoothing_entrypoint():
+    task = ModelTask()
+    task.launch(ExponentialSmoothing)
