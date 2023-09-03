@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from typing import Optional, Type
 
 import mlflow
+from darts.models import Prophet
 from darts.models.forecasting.auto_arima import AutoARIMA
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
@@ -106,3 +107,8 @@ def exponential_smoothing_entrypoint():
 def autoarima_entrypoint():
     task = ModelTask()
     task.launch(AutoARIMA)
+
+
+def prophet_entrypoint():
+    task = ModelTask()
+    task.launch(Prophet)
