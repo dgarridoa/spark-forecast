@@ -81,10 +81,23 @@ environments:
             - "file:fuse://conf/tasks/autoarima_config.yml"
             - "--env"
             - "dev"
+        - task_key: "prophet"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "dev"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "prophet"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/prophet_config.yml"
+            - "--env"
+            - "dev"
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
             - task_key: "autoarima"
+            - task_key: "prophet"
           job_cluster_key: "dev"
           python_wheel_task:
             package_name: "dbx_demand_forecast"
@@ -160,10 +173,23 @@ environments:
             - "file:fuse://conf/tasks/autoarima_config.yml"
             - "--env"
             - "staging"
+        - task_key: "prophet"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "staging"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "prophet"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/prophet_config.yml"
+            - "--env"
+            - "staging"
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
             - task_key: "autoarima"
+            - task_key: "prophet"
           job_cluster_key: "staging"
           python_wheel_task:
             package_name: "dbx_demand_forecast"
@@ -239,10 +265,23 @@ environments:
             - "file:fuse://conf/tasks/autoarima_config.yml"
             - "--env"
             - "prod"
+        - task_key: "prophet"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "prod"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "prophet"
+            parameters:
+            - "--conf-file"
+            - "file:fuse://conf/tasks/prophet_config.yml"
+            - "--env"
+            - "prod"
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
             - task_key: "autoarima"
+            - task_key: "prophet"
           job_cluster_key: "prod"
           python_wheel_task:
             package_name: "dbx_demand_forecast"
