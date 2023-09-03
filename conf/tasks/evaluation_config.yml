@@ -24,8 +24,8 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
-    metrics: ["rmse", "mae"]
-    model_selection_metric: "mae"
+    metrics: ["rmse", "mae", "mape"]
+    model_selection_metric: "mape"
     execution_date: "2018-01-01"
     freq: "1D"
   staging:
@@ -53,8 +53,8 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
-    metrics: ["rmse", "mae"]
-    model_selection_metric: "mae"
+    metrics: ["rmse", "mae", "mape"]
+    model_selection_metric: "mape"
     execution_date: "2018-01-01"
     freq: "1D"
   prod:
@@ -82,7 +82,7 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
-    metrics: ["rmse", "mae"]
-    model_selection_metric: "mae"
+    metrics: ["rmse", "mae", "mape"]
+    model_selection_metric: "mape"
     execution_date: "2018-01-01"
     freq: "1D"
