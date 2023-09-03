@@ -57,6 +57,11 @@ jobs:
           echo "Launching unit tests"
           poetry run pytest tests/unit
 
+      - name: Run integration tests
+        run: |
+          echo "Launching integration tests"
+          poetry run pytest tests/integration
+
       - name: Deploy the workflow as a job
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.DATABRICKS_HOST }}'
