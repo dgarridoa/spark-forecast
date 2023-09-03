@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from typing import Optional, Type
 
 import mlflow
+from darts.models.forecasting.auto_arima import AutoARIMA
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -100,3 +101,8 @@ class ModelTask(Task):
 def exponential_smoothing_entrypoint():
     task = ModelTask()
     task.launch(ExponentialSmoothing)
+
+
+def autoarima_entrypoint():
+    task = ModelTask()
+    task.launch(AutoARIMA)

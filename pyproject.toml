@@ -44,6 +44,7 @@ build-backend = "poetry.core.mansonry.api"
 "ingest" = "dbx_demand_forecast.tasks.ingest:entrypoint"
 "split" = "dbx_demand_forecast.tasks.split:entrypoint"
 "exponential_smoothing" = "dbx_demand_forecast.tasks.model:exponential_smoothing_entrypoint"
+"autoarima" = "dbx_demand_forecast.tasks.model:autoarima_entrypoint"
 "evaluation" = "dbx_demand_forecast.tasks.evaluation:entrypoint"
 
 [tool.pytest.ini_options]
