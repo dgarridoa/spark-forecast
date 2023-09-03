@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import Any, Optional, Type
+from typing import Optional, Type
 
 import mlflow
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
@@ -55,7 +55,7 @@ class ModelTask(Task):
         group_columns: list[str] = self.conf["group_columns"]
         time_column: str = self.conf["time_column"]
         target_column: str = self.conf["target_column"]
-        model_params: dict[str, Any] = self.conf["model_params"]
+        model_params: dict = self.conf.get("model_params", {})
         freq: str = self.conf["freq"]
 
         distributed_model = DistributedModel(
