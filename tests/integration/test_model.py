@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 import mlflow
 import pandas as pd
+import pyspark.sql.functions as F
 import pytest
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
@@ -67,8 +68,8 @@ def create_split_table(spark: SparkSession) -> None:
 
 @pytest.fixture(scope="session", autouse=True)
 def launch_model_task(spark: SparkSession):
-    create_split_table(spark)
     logging.info(f"Launching {ModelTask.__name__}")
+    create_split_table(spark)
     task = ModelTask(spark, conf)
     task.launch(ExponentialSmoothing)
     logging.info(f"Launching the {ModelTask.__name__} - done")
@@ -86,7 +87,7 @@ def test_forecast_on_test(spark: SparkSession):
         spark,
         conf["output"]["forecast_on_test"]["database"],
         conf["output"]["forecast_on_test"]["table"],
-    )
+    ).filter(F.col("model") == "ExponentialSmoothing")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -110,7 +111,7 @@ def test_all_models_forecast(spark: SparkSession):
         spark,
         conf["output"]["all_models_forecast"]["database"],
         conf["output"]["all_models_forecast"]["table"],
-    )
+    ).filter(F.col("model") == "ExponentialSmoothing")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {

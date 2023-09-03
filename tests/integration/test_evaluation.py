@@ -98,6 +98,7 @@ def create_forecast_on_test_table(spark: SparkSession) -> None:
         ForecastSchema,
         conf["input"]["forecast_on_test"]["database"],
         conf["input"]["forecast_on_test"]["table"],
+        ["model"],
     )
 
 
@@ -120,6 +121,7 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
         ForecastSchema,
         conf["input"]["all_models_forecast"]["database"],
         conf["input"]["all_models_forecast"]["table"],
+        ["model"],
     )
 
 
