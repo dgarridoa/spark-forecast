@@ -49,13 +49,13 @@ class Split:
     def fill_missing_dates(self, df: pd.DataFrame) -> pd.DataFrame:
         self.add_dummy_date(df)
         serie = pd.Series(
-            df[self.target_column].values,
-            index=pd.to_datetime(df[self.time_column]),
+            df.loc[:, self.target_column].values,
+            index=pd.to_datetime(df.loc[:, self.time_column]),
         )
         time_serie = TimeSeries.from_series(
             serie, fill_missing_dates=True, fillna_value=0, freq=self.freq
         )
-        serie = time_serie.pd_series()[:-1]
+        serie = time_serie.pd_series().iloc[:-1]
 
         group_columns_values = df.loc[0, self.group_columns].to_dict()
         df = pd.DataFrame(
