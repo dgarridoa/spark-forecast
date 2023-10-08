@@ -1,3 +1,4 @@
+import copy
 from datetime import date, timedelta
 from typing import Optional
 
@@ -40,7 +41,7 @@ class Split:
         )
 
     def add_dummy_date(self, df: pd.DataFrame) -> None:
-        dummy_row = df.iloc[0]
+        dummy_row = copy.deepcopy(df.iloc[0])
         dummy_row[self.time_column] = self.execution_date
         dummy_row[self.target_column] = 0
         df.loc[len(df)] = dummy_row
