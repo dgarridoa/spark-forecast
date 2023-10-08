@@ -46,10 +46,10 @@ class Metrics:
     ) -> pd.DataFrame:
         self.set_group_columns(df)
         y = extract_timeseries_from_pandas_dataframe(
-            df, self.time_column, self.target_column
+            df, self.time_column, self.target_column, self.freq
         )
         y_pred = extract_timeseries_from_pandas_dataframe(
-            df, self.time_column, "prediction"
+            df, self.time_column, "prediction", self.freq
         )
         metric_value = metric(y, y_pred)
         df_metric = pd.DataFrame(
