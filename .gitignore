@@ -45,3 +45,5 @@ mlruns/
 !project.json
 *.csv
 *.parquet
+
+.databricks
