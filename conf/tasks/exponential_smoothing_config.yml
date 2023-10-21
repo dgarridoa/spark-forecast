@@ -1,6 +1,5 @@
 env:
   dev:
-    experiment: "/Shared/dbx/dbx_demand_forecast/dev_dbx_demand_forecast"
     input:
       database: "dev"
       table: "split"
@@ -21,7 +20,6 @@ env:
     execution_date: "2018-01-01"
     freq: "1D"
   staging:
-    experiment: "/Shared/dbx/dbx_demand_forecast/staging_dbx_demand_forecast"
     input:
       database: "staging"
       table: "split"
@@ -42,7 +40,6 @@ env:
     execution_date: "2018-01-01"
     freq: "1D"
   prod:
-    experiment: "/Shared/dbx/dbx_demand_forecast/prod_dbx_demand_forecast"
     input:
       database: "prod"
       table: "split"

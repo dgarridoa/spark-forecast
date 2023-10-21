@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import date, timedelta
 
 import mlflow
@@ -17,7 +18,6 @@ from tests.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
-    "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "input": {
         "split": {
             "database": "default",
@@ -137,7 +137,9 @@ def launch_evaluation_task(spark: SparkSession):
 
 
 def test_mlflow_tracking_server_is_not_empty():
-    experiment = mlflow.get_experiment_by_name(conf["experiment"])
+    experiment = mlflow.get_experiment_by_name(
+        os.environ["MLFLOW_EXPERIMENT_NAME"]
+    )
     assert experiment is not None
     runs = mlflow.search_runs(experiment_ids=[experiment.experiment_id])
     assert runs.empty is False

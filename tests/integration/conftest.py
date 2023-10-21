@@ -125,6 +125,9 @@ def mlflow_local():
     mlflow.set_tracking_uri(Path(tracking_uri).as_uri())
     mlflow.set_registry_uri(registry_uri)
     logging.info("MLflow instance configured")
+    os.environ[
+        "MLFLOW_EXPERIMENT_NAME"
+    ] = "/Shared/dbx_demand_forecast/dev_demand_forecast"
     yield None
 
     mlflow.end_run()

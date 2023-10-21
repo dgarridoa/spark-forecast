@@ -3,7 +3,11 @@ from pyspark.sql.dataframe import DataFrame
 
 from dbx_demand_forecast.common import Task
 from dbx_demand_forecast.schema import InputSchema, SalesSchema
-from dbx_demand_forecast.utils import read_csv, write_delta_table
+from dbx_demand_forecast.utils import (
+    read_csv,
+    set_mlflow_experiment,
+    write_delta_table,
+)
 
 
 class IngestionTask(Task):
@@ -28,7 +32,7 @@ class IngestionTask(Task):
     def launch(self):
         self.logger.info(f"Launching {self.__class__.__name__}")
 
-        mlflow.set_experiment(self.conf["experiment"])
+        set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
             mlflow.set_tags(self.conf)
 

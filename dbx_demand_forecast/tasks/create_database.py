@@ -1,13 +1,14 @@
 import mlflow
 
 from dbx_demand_forecast.common import Task
+from dbx_demand_forecast.utils import set_mlflow_experiment
 
 
 class CreateDataBaseTask(Task):
     def launch(self):
         self.logger.info(f"Launching {self.__class__.__name__}")
 
-        mlflow.set_experiment(self.conf["experiment"])
+        set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
             mlflow.set_tags(self.conf)
 

@@ -1,5 +1,7 @@
+import os
 from typing import Optional
 
+import mlflow
 import pandas as pd
 from darts.timeseries import TimeSeries
 from delta.tables import DeltaTable
@@ -66,3 +68,12 @@ def extract_timeseries_from_pandas_dataframe(
     )
     time_serie = TimeSeries.from_series(serie, freq=freq)
     return time_serie
+
+
+def set_mlflow_experiment() -> None:
+    experiment_name = os.getenv("MLFLOW_EXPERIMENT_NAME")
+    if not experiment_name:
+        raise ValueError(
+            "environment variable MLFLOW_EXPERIMENT_NAME is unset"
+        )
+    mlflow.set_experiment(experiment_name)

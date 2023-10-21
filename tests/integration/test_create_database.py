@@ -1,4 +1,5 @@
 import logging
+import os
 
 import mlflow
 import pytest
@@ -8,7 +9,6 @@ from dbx_demand_forecast.tasks.create_database import CreateDataBaseTask
 
 conf = {
     "env": "dev",
-    "experiment": "/Shared/dbx_demand_forecast/dev_demand_forecast",
     "database": "dev",
 }
 
@@ -22,7 +22,9 @@ def launch_create_database_task(spark: SparkSession):
 
 
 def test_mlflow_tracking_server_is_not_empty():
-    experiment = mlflow.get_experiment_by_name(conf["experiment"])
+    experiment = mlflow.get_experiment_by_name(
+        os.environ["MLFLOW_EXPERIMENT_NAME"]
+    )
     assert experiment is not None
     runs = mlflow.search_runs(experiment_ids=[experiment.experiment_id])
     assert runs.empty is False
