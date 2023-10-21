@@ -10,7 +10,11 @@ from pyspark.sql.types import StructType
 from dbx_demand_forecast.common import Task
 from dbx_demand_forecast.evaluation import Evaluation
 from dbx_demand_forecast.schema import ForecastSchema, MetricsSchema
-from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from dbx_demand_forecast.utils import (
+    read_delta_table,
+    set_mlflow_experiment,
+    write_delta_table,
+)
 
 
 class EvaluationTask(Task):
@@ -59,7 +63,7 @@ class EvaluationTask(Task):
             freq=self.conf["freq"],
         )
 
-        mlflow.set_experiment(self.conf["experiment"])
+        set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
             mlflow.set_tags(self.conf)
 

@@ -11,7 +11,11 @@ from pyspark.sql.dataframe import DataFrame
 from dbx_demand_forecast.common import Task
 from dbx_demand_forecast.model import DistributedModel, ModelProtocol
 from dbx_demand_forecast.schema import ForecastSchema
-from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from dbx_demand_forecast.utils import (
+    read_delta_table,
+    set_mlflow_experiment,
+    write_delta_table,
+)
 
 
 class ModelTask(Task):
@@ -79,7 +83,7 @@ class ModelTask(Task):
         run_name = f"{self.__class__.__name__}[{model_cls.__name__}]"
         self.logger.info(f"Launching {run_name}")
 
-        mlflow.set_experiment(self.conf["experiment"])
+        set_mlflow_experiment()
         with mlflow.start_run(run_name=run_name):
             mlflow.set_tags(self.conf)
 
