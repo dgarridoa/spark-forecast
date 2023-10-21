@@ -6,7 +6,7 @@ authors = ["Diego Alberto Garrido Amaya <diego.garrido.6568@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.10"
+python = ">=3.10,<3.11"
 pyyaml = "*"
 darts = "0.26.0"
 torch = ">=1.13.1,<2"
