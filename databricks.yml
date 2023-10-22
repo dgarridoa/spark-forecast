@@ -1,0 +1,160 @@
+bundle:
+  name: dbx-demand-forecast
+
+artifacts:
+  wheel:
+    type: whl
+    path: ./
+    build: poetry build
+
+workspace:
+  auth_type: pat
+
+resources:
+  experiments:
+    mlflow-dbx-demand-forecast:
+      name: ${workspace.root_path}/artifacts/${bundle.target}-${bundle.name}
+  jobs:
+    dbx-demand-forecast:
+      name: ${bundle.target}-dbx-demand-forecast
+      job_clusters:
+        - job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          new_cluster:
+            spark_version: "13.3.x-cpu-ml-scala2.12"
+            spark_conf:
+              spark.databricks.sql.initial.catalog.name: "dbx-demand-forecast"
+            spark_env_vars:
+              MLFLOW_EXPERIMENT_NAME: "${resources.experiments.mlflow-dbx-demand-forecast.name}"
+            num_workers: 1
+            node_type_id: "Standard_DS3_v2"
+      tasks:
+        - task_key: "create_database"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "create_database"
+            parameters:
+              - "--conf-file"
+              - "/Workspace${workspace.root_path}/files/conf/tasks/create_database_config.yml"
+              - "--env"
+              - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "ingest"
+          depends_on:
+            - task_key: "create_database"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+             package_name: "dbx_demand_forecast"
+             entry_point: "ingest"
+             parameters:
+             - "--conf-file"
+             - "/Workspace${workspace.root_path}/files/conf/tasks/ingest_config.yml"
+             - "--env"
+             - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "split"
+          depends_on:
+            - task_key: "ingest"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+             package_name: "dbx_demand_forecast"
+             entry_point: "split"
+             parameters:
+             - "--conf-file"
+             - "/Workspace${workspace.root_path}/files/conf/tasks/split_config.yml"
+             - "--env"
+             - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "exponential_smoothing"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "exponential_smoothing"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/exponential_smoothing_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "autoarima"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "autoarima"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/autoarima_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "prophet"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "prophet"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/prophet_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "evaluation"
+          depends_on:
+            - task_key: "exponential_smoothing"
+            - task_key: "autoarima"
+            - task_key: "prophet"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "dbx_demand_forecast"
+            entry_point: "evaluation"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/evaluation_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+
+targets:
+  dev:
+    mode: development
+    default: true
+  staging:
+    mode: production
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: diego.garrido.6568@gmail.com
+  prod:
+    mode: production
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: diego.garrido.6568@gmail.com
+    resources:
+      jobs:
+        dbx-demand-forecast:
+          job_clusters:
+            - job_cluster_key: "${bundle.target}"
+              new_cluster:
+                num_workers: 3
+          email_notifications:
+            on_start: ["diego.garrido.6568@gmail.com"]
+            on_success: ["diego.garrido.6568@gmail.com"]
+            on_failure: ["diego.garrido.6568@gmail.com"]
+          schedule:
+            quartz_cron_expression: "16 59 23 ? * Mon"
+            timezone_id: "America/Santiago"
+            pause_status: "PAUSED"
