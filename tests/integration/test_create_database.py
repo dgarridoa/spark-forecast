@@ -5,7 +5,7 @@ import mlflow
 import pytest
 from pyspark.sql import SparkSession
 
-from dbx_demand_forecast.tasks.create_database import CreateDataBaseTask
+from spark_forecast.tasks.create_database import CreateDataBaseTask
 
 conf = {
     "env": "dev",

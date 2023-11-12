@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
-from dbx_demand_forecast.schema import SalesSchema
-from dbx_demand_forecast.tasks.ingest import IngestionTask
-from dbx_demand_forecast.utils import read_delta_table
+from spark_forecast.schema import SalesSchema
+from spark_forecast.tasks.ingest import IngestionTask
+from spark_forecast.utils import read_delta_table
 from tests.utils import assert_pyspark_df_equal
 
 conf = {

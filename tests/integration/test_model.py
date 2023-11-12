@@ -9,9 +9,9 @@ import pytest
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
 
-from dbx_demand_forecast.schema import ForecastSchema, SplitSchema
-from dbx_demand_forecast.tasks.model import ModelTask
-from dbx_demand_forecast.utils import read_delta_table, write_delta_table
+from spark_forecast.schema import ForecastSchema, SplitSchema
+from spark_forecast.tasks.model import ModelTask
+from spark_forecast.utils import read_delta_table, write_delta_table
 from tests.utils import assert_pyspark_df_equal
 
 conf = {

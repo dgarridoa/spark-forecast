@@ -1,7 +1,7 @@
 import mlflow
 
-from dbx_demand_forecast.common import Task
-from dbx_demand_forecast.utils import set_mlflow_experiment
+from spark_forecast.common import Task
+from spark_forecast.utils import set_mlflow_experiment
 
 
 class CreateDataBaseTask(Task):

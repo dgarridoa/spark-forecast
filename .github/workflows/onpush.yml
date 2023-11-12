@@ -74,7 +74,7 @@ jobs:
 
       - name: Run the workflow
         run: |
-          databricks bundle run -t staging dbx-demand-forecast
+          databricks bundle run -t staging demand-forecast
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.DATABRICKS_HOST }}'
           DATABRICKS_TOKEN: '${{ steps.secrets.outputs.DATABRICKS_TOKEN }}'

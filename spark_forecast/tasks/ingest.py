@@ -1,9 +1,9 @@
 import mlflow
 from pyspark.sql.dataframe import DataFrame
 
-from dbx_demand_forecast.common import Task
-from dbx_demand_forecast.schema import InputSchema, SalesSchema
-from dbx_demand_forecast.utils import (
+from spark_forecast.common import Task
+from spark_forecast.schema import InputSchema, SalesSchema
+from spark_forecast.utils import (
     read_csv,
     set_mlflow_experiment,
     write_delta_table,

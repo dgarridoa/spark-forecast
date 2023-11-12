@@ -3,8 +3,8 @@ from datetime import date, timedelta
 import pandas as pd
 from pyspark.sql import Row, SparkSession
 
-from dbx_demand_forecast.schema import SalesSchema, SplitSchema
-from dbx_demand_forecast.split import Split
+from spark_forecast.schema import SalesSchema, SplitSchema
+from spark_forecast.split import Split
 from tests.utils import assert_pyspark_df_equal
 
 execution_date = date(2022, 9, 12)
