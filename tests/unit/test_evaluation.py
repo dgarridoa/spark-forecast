@@ -3,12 +3,8 @@ from datetime import date, timedelta
 import pandas as pd
 from pyspark.sql import Row, SparkSession
 
-from dbx_demand_forecast.evaluation import Evaluation, mape
-from dbx_demand_forecast.schema import (
-    ForecastSchema,
-    MetricsSchema,
-    SplitSchema,
-)
+from spark_forecast.evaluation import Evaluation, mape
+from spark_forecast.schema import ForecastSchema, MetricsSchema, SplitSchema
 from tests.utils import assert_pyspark_df_equal
 
 group_columns = ["store", "item"]

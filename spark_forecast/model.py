@@ -5,7 +5,7 @@ from darts.timeseries import TimeSeries
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import StructType
 
-from dbx_demand_forecast.utils import extract_timeseries_from_pandas_dataframe
+from spark_forecast.utils import extract_timeseries_from_pandas_dataframe
 
 
 @runtime_checkable

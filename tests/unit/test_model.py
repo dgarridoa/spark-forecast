@@ -4,8 +4,8 @@ import pandas as pd
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from pyspark.sql import SparkSession
 
-from dbx_demand_forecast.model import DistributedModel
-from dbx_demand_forecast.schema import ForecastSchema, SplitSchema
+from spark_forecast.model import DistributedModel
+from spark_forecast.schema import ForecastSchema, SplitSchema
 from tests.utils import assert_pyspark_df_equal
 
 group_columns = ["store", "item"]

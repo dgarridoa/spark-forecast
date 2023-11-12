@@ -127,7 +127,7 @@ def mlflow_local():
     logging.info("MLflow instance configured")
     os.environ[
         "MLFLOW_EXPERIMENT_NAME"
-    ] = "/Shared/dbx_demand_forecast/dev_demand_forecast"
+    ] = "/Shared/spark_forecast/dev_demand_forecast"
     yield None
 
     mlflow.end_run()
@@ -150,7 +150,7 @@ def dbutils_fixture() -> Iterator[None]:
     """
     logging.info("Patching the DBUtils object")
     with patch(
-        "dbx_demand_forecast.common.get_dbutils", lambda _: DBUtilsFixture()
+        "spark_forecast.common.get_dbutils", lambda _: DBUtilsFixture()
     ):
         yield
     logging.info("Test session finished, patching completed")

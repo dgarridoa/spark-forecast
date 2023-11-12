@@ -1,5 +1,5 @@
 bundle:
-  name: dbx-demand-forecast
+  name: demand-forecast
 
 artifacts:
   wheel:
@@ -12,26 +12,26 @@ workspace:
 
 resources:
   experiments:
-    mlflow-dbx-demand-forecast:
+    mlflow-demand-forecast:
       name: ${workspace.root_path}/artifacts/${bundle.target}-${bundle.name}
   jobs:
-    dbx-demand-forecast:
-      name: ${bundle.target}-dbx-demand-forecast
+    demand-forecast:
+      name: ${bundle.target}-demand-forecast
       job_clusters:
         - job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           new_cluster:
             spark_version: "13.3.x-cpu-ml-scala2.12"
             spark_conf:
-              spark.databricks.sql.initial.catalog.name: "dbx-demand-forecast"
+              spark.databricks.sql.initial.catalog.name: "demand-forecast"
             spark_env_vars:
-              MLFLOW_EXPERIMENT_NAME: "${resources.experiments.mlflow-dbx-demand-forecast.name}"
+              MLFLOW_EXPERIMENT_NAME: "${resources.experiments.mlflow-demand-forecast.name}"
             num_workers: 1
             node_type_id: "Standard_DS3_v2"
       tasks:
         - task_key: "create_database"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-            package_name: "dbx_demand_forecast"
+            package_name: "spark_forecast"
             entry_point: "create_database"
             parameters:
               - "--conf-file"
@@ -45,7 +45,7 @@ resources:
             - task_key: "create_database"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-             package_name: "dbx_demand_forecast"
+             package_name: "spark_forecast"
              entry_point: "ingest"
              parameters:
              - "--conf-file"
@@ -59,7 +59,7 @@ resources:
             - task_key: "ingest"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-             package_name: "dbx_demand_forecast"
+             package_name: "spark_forecast"
              entry_point: "split"
              parameters:
              - "--conf-file"
@@ -73,7 +73,7 @@ resources:
             - task_key: "split"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-            package_name: "dbx_demand_forecast"
+            package_name: "spark_forecast"
             entry_point: "exponential_smoothing"
             parameters:
             - "--conf-file"
@@ -87,7 +87,7 @@ resources:
             - task_key: "split"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-            package_name: "dbx_demand_forecast"
+            package_name: "spark_forecast"
             entry_point: "autoarima"
             parameters:
             - "--conf-file"
@@ -101,7 +101,7 @@ resources:
             - task_key: "split"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-            package_name: "dbx_demand_forecast"
+            package_name: "spark_forecast"
             entry_point: "prophet"
             parameters:
             - "--conf-file"
@@ -117,7 +117,7 @@ resources:
             - task_key: "prophet"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
-            package_name: "dbx_demand_forecast"
+            package_name: "spark_forecast"
             entry_point: "evaluation"
             parameters:
             - "--conf-file"
@@ -145,7 +145,7 @@ targets:
       user_name: diego.garrido.6568@gmail.com
     resources:
       jobs:
-        dbx-demand-forecast:
+        demand-forecast:
           job_clusters:
             - job_cluster_key: "${bundle.target}"
               new_cluster:

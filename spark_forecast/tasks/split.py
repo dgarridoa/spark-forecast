@@ -5,10 +5,10 @@ import mlflow
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-from dbx_demand_forecast.common import Task
-from dbx_demand_forecast.schema import SplitSchema
-from dbx_demand_forecast.split import Split
-from dbx_demand_forecast.utils import (
+from spark_forecast.common import Task
+from spark_forecast.schema import SplitSchema
+from spark_forecast.split import Split
+from spark_forecast.utils import (
     read_delta_table,
     set_mlflow_experiment,
     write_delta_table,
