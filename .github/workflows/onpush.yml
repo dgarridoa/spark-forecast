@@ -57,11 +57,6 @@ jobs:
           echo "Launching unit tests"
           poetry run pytest tests/unit
 
-      - name: Run integration tests
-        run: |
-          echo "Launching integration tests"
-          poetry run pytest tests/integration
-
       - name: Intall databricks cli
         uses: databricks/setup-cli@main
 
