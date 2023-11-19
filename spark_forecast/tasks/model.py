@@ -131,7 +131,7 @@ def random_forest_entrypoint():
     task.launch(RandomForest)
 
 
-def croston_entripoint():
+def croston_entrypoint():
     task = ModelTask()
     task.launch(Croston)
 
