@@ -1,4 +1,11 @@
-from typing import Optional, Protocol, Type, TypeVar, runtime_checkable
+from typing import (
+    Optional,
+    Protocol,
+    Sequence,
+    Type,
+    TypeVar,
+    runtime_checkable,
+)
 
 import pandas as pd
 from darts.timeseries import TimeSeries
@@ -16,7 +23,7 @@ class ModelProtocol(Protocol):
     def fit(self, series: TimeSeries) -> Optional["ModelProtocol"]:
         ...
 
-    def predict(self, n: int) -> TimeSeries:
+    def predict(self, n: int) -> TimeSeries | Sequence[TimeSeries]:
         ...
 
 
@@ -51,7 +58,10 @@ class Model:
         self.model.fit(y_train)
 
     def predict(self, steps: int) -> pd.DataFrame:
-        y_predict = self.model.predict(steps).pd_series()
+        predict = self.model.predict(steps)
+        if not isinstance(predict, TimeSeries):
+            raise NotImplementedError("Only univariate models are supported")
+        y_predict = predict.pd_series()
         df = pd.DataFrame(
             {
                 "model": self.model.__class__.__name__,
