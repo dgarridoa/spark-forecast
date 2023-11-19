@@ -15,7 +15,7 @@ env:
     target_column: "sales"
     model_params:
       seasonal_periods: 7
-    test_size: 90
+    test_size: 14
     steps: 7
     execution_date: "2018-01-01"
     freq: "1D"
@@ -35,7 +35,7 @@ env:
     target_column: "sales"
     model_params:
       seasonal_periods: 7
-    test_size: 90
+    test_size: 14
     steps: 7
     execution_date: "2018-01-01"
     freq: "1D"
@@ -55,7 +55,7 @@ env:
     target_column: "sales"
     model_params:
       seasonal_periods: 7
-    test_size: 90
+    test_size: 14
     steps: 7
     execution_date: "2018-01-01"
     freq: "1D"
