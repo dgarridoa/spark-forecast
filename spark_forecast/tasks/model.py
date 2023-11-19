@@ -4,6 +4,7 @@ from typing import Optional, Type
 import mlflow
 from darts.models import Prophet
 from darts.models.forecasting.auto_arima import AutoARIMA
+from darts.models.forecasting.croston import Croston
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
 from darts.models.forecasting.random_forest import RandomForest
 from darts.models.forecasting.xgboost import XGBModel
@@ -128,3 +129,8 @@ def xgboost_entrypoint():
 def random_forest_entrypoint():
     task = ModelTask()
     task.launch(RandomForest)
+
+
+def croston_entripoint():
+    task = ModelTask()
+    task.launch(Croston)
