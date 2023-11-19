@@ -110,11 +110,26 @@ resources:
             - "${bundle.target}"
           libraries:
             - whl: ./dist/*.whl
+        - task_key: "xgboost"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "spark_forecast"
+            entry_point: "xgboost"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/xgboost_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
             - task_key: "autoarima"
             - task_key: "prophet"
+            - task_key: "xgboost"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
