@@ -5,6 +5,7 @@ import mlflow
 from darts.models import Prophet
 from darts.models.forecasting.auto_arima import AutoARIMA
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
+from darts.models.forecasting.random_forest import RandomForest
 from darts.models.forecasting.xgboost import XGBModel
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -122,3 +123,8 @@ def prophet_entrypoint():
 def xgboost_entrypoint():
     task = ModelTask()
     task.launch(XGBModel)
+
+
+def random_forest_entrypoint():
+    task = ModelTask()
+    task.launch(RandomForest)
