@@ -45,6 +45,7 @@ build-backend = "poetry.core.mansonry.api"
 "exponential_smoothing" = "spark_forecast.tasks.model:exponential_smoothing_entrypoint"
 "autoarima" = "spark_forecast.tasks.model:autoarima_entrypoint"
 "prophet" = "spark_forecast.tasks.model:prophet_entrypoint"
+"xgboost" = "spark_forecast.tasks.model:xgboost_entrypoint"
 "evaluation" = "spark_forecast.tasks.evaluation:entrypoint"
 
 [tool.pytest.ini_options]

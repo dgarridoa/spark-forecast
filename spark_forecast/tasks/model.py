@@ -5,6 +5,7 @@ import mlflow
 from darts.models import Prophet
 from darts.models.forecasting.auto_arima import AutoARIMA
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
+from darts.models.forecasting.xgboost import XGBModel
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
@@ -116,3 +117,8 @@ def autoarima_entrypoint():
 def prophet_entrypoint():
     task = ModelTask()
     task.launch(Prophet)
+
+
+def xgboost_entrypoint():
+    task = ModelTask()
+    task.launch(XGBModel)
