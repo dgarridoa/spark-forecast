@@ -138,6 +138,20 @@ resources:
             - "${bundle.target}"
           libraries:
             - whl: ./dist/*.whl
+        - task_key: "croston"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "spark_forecast"
+            entry_point: "croston"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/croston_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
@@ -145,6 +159,7 @@ resources:
             - task_key: "prophet"
             - task_key: "xgboost"
             - task_key: "random_forest"
+            - task_key: "croston"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
