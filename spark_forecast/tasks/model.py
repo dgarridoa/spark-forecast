@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 from typing import Optional, Type
 
 import mlflow
-from darts.models import Prophet
+from darts.models import NaiveMean, NaiveMovingAverage, Prophet
 from darts.models.forecasting.auto_arima import AutoARIMA
 from darts.models.forecasting.croston import Croston
 from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
@@ -134,3 +134,13 @@ def random_forest_entrypoint():
 def croston_entripoint():
     task = ModelTask()
     task.launch(Croston)
+
+
+def mean_entrypoint():
+    task = ModelTask()
+    task.launch(NaiveMean)
+
+
+def moving_average_entrypoint():
+    task = ModelTask()
+    task.launch(NaiveMovingAverage)
