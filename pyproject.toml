@@ -48,6 +48,8 @@ build-backend = "poetry.core.mansonry.api"
 "xgboost" = "spark_forecast.tasks.model:xgboost_entrypoint"
 "random_forest" = "spark_forecast.tasks.model:random_forest_entrypoint"
 "croston" = "spark_forecast.tasks.model:croston_entrypoint"
+"mean" = "spark_forecast.tasks.model:mean_entrypoint"
+"moving_average" = "spark_forecast.tasks.model:moving_average_entrypoint"
 "evaluation" = "spark_forecast.tasks.evaluation:entrypoint"
 
 [tool.pytest.ini_options]

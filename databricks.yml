@@ -152,6 +152,34 @@ resources:
             - "${bundle.target}"
           libraries:
             - whl: ./dist/*.whl
+        - task_key: "mean"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "spark_forecast"
+            entry_point: "mean"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/mean_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "moving_average"
+          depends_on:
+            - task_key: "split"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "spark_forecast"
+            entry_point: "moving_average"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/tasks/moving_average_config.yml"
+            - "--env"
+            - "${bundle.target}"
+          libraries:
+            - whl: ./dist/*.whl
         - task_key: "evaluation"
           depends_on:
             - task_key: "exponential_smoothing"
@@ -160,6 +188,8 @@ resources:
             - task_key: "xgboost"
             - task_key: "random_forest"
             - task_key: "croston"
+            - task_key: "mean"
+            - task_key: "moving_average"
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
