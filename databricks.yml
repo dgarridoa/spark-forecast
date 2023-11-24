@@ -222,7 +222,7 @@ targets:
       jobs:
         demand-forecast:
           job_clusters:
-            - job_cluster_key: "${bundle.target}"
+            - job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
               new_cluster:
                 num_workers: 3
           email_notifications:
