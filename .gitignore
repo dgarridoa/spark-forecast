@@ -49,3 +49,6 @@ mlruns/
 .databricks
 
 !train.csv
+
+# Drawio
+*.drawio.bkp
