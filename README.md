@@ -1,102 +1,207 @@
-# dbx-demand-forecast
+# spark-forecast
 
-This is a sample project for Databricks, generated via cookiecutter.
+Spark Forecast is a personal project to explore distributed forecasting on Spark using [darts](https://github.com/unit8co/darts). The project uses Databricks Asset Bundles (dap) to deploy an example of demand forecasting pipeline as Databricks Workflow.
 
-While using this project, you need Python 3.9 and `poetry` for package management.
+While using this project, you need Python 3.10 and `poetry` for package management.
 
 ## Local environment setup
 
 1. Install poetry, a python packaging and dependency management.
-```bash
+```
 curl -sSL https://install.python-poetry.org | python -
 ```
 
-2. If you don't have JDK installed on your local machine, install it (in this example we use `conda`-based installation):
-```bash
-apt install openjdk-11-jdk
+2. If you don't have JDK installed on your local machine, install it:
+```
+apt install openjdk-17-jdk
 ```
 
-3. Install project locally (this will also install dev requirements):
-```bash
+3. Install project locally (this will also install dev and test requirements):
+```
 poetry install --with dev,test
 ```
 
 The commands in the following sections can be ran with `poetry run <command>` or exactly as they are from inside a poetry environment activated with `poetry shell`.
 
+4. Alternatively, create a docker image with all dependecies:
+```
+docker build -t spark-forecast .
+```
+
 ## Running unit tests
 
 For unit testing, please use `pytest`:
-```bash
+```
 pytest tests/unit --cov
+```
+
+Alternatively, using docker
+```
+docker run --rm spark-forecast poetry run pytest tests/unit --cov
 ```
 
 Please check the directory `tests/unit` for more details on how to use unit tests.
 In the `tests/unit/conftest.py` you'll also find useful testing primitives, such as local Spark instance with Delta support, local MLflow and DBUtils fixture.
 
-## Running integration tests
+## Databricks Setup
 
-There are two options for running integration tests:
+- [Create an Azure Account](https://azure.microsoft.com)
+- [Create an Azure Databricks Workspace](https://learn.microsoft.com/en-us/azure/databricks/getting-started)
+- [Create Azure Data Lake Storage Gen 2](https://learn.microsoft.com/en-us/azure/storage/blobs/create-data-lake-storage-account)
+- [Create Unity Catalog Metastore](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/get-started)
+- [Enable a workspace for Unity Catalog](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/enable-workspaces)
+- [Create a catalog with name `demand-forecast`](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-catalogs)
+- [Create Personal Access Token](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth#--azure-databricks-personal-access-tokens-for-workspace-users)
 
-- On an all-purpose cluster via `dbx execute`
-- On a job cluster via `dbx launch`
+## Running on Databricks
 
-For quicker startup of the job clusters we recommend using instance pools ([AWS](https://docs.databricks.com/clusters/instance-pools/index.html), [Azure](https://docs.microsoft.com/en-us/azure/databricks/clusters/instance-pools/), [GCP](https://docs.gcp.databricks.com/clusters/instance-pools/index.html)).
+### Setting
+Install the Databricks CLI from https://docs.databricks.com/dev-tools/cli/databricks-cli.html
 
-For an integration test on all-purpose cluster, use the following command:
-```bash
-dbx execute <workflow-name> --cluster-name=<name of all-purpose cluster>
+Authenticate to your Databricks workspace:
+```
+databricks configure
 ```
 
-To execute a task inside multitask job, use the following command:
-```bash
-dbx execute <workflow-name> \
-    --cluster-name=<name of all-purpose cluster> \
-    --job=<name of the job to test> \
-    --task=<task-key-from-job-definition>
+### Deploy on a Job Compute
+
+Deploy demand-forecast from dev target.
+```
+databricks bundle deploy --target dev demand-forecast
 ```
 
-For a test on a job cluster, deploy the job assets and then launch a run from them:
-```bash
-dbx deploy <workflow-name> --assets-only
-dbx launch <workflow-name>  --from-assets --trace
+(Note that "dev" is the default target, so the `--target` parameter
+is optional here. If the workflow is not specified all are deployed)
+
+You can find that job by opening your workpace and clicking on **Workflows**.
+
+Similarly, to deploy a production copy, type:
+```
+databricks bundle deploy --target prod
 ```
 
-
-## Interactive execution and development on Databricks clusters
-
-1. `dbx` expects that cluster for interactive execution supports `%pip` and `%conda` magic [commands](https://docs.databricks.com/libraries/notebooks-python-libraries.html).
-2. Please configure your workflow (and tasks inside it) in `conf/deployment.yml` file.
-3. To execute the code interactively, provide either `--cluster-id` or `--cluster-name`.
-```bash
-dbx execute <workflow-name> \
-    --cluster-name="<some-cluster-name>"
+To run a job or pipeline, use the "run" comand:
+```
+databricks bundle run --target dev demand-forecast
 ```
 
-Multiple users also can use the same cluster for development. Libraries will be isolated per each user execution context.
+### Deploy on an interactive cluster
 
-## Working with notebooks and Repos
+The workflows from a target with `mode: development` as the `dev` on this project can override the compute used in the deployment. To do this the following steps must be follows:
+
+1. Create a cluster with the environment variables `MLFLOW_EXPERIMENT_NAME` and `WORKSPACE_FILE_PATH` as are set in the `databricks.yml` file. Navigate to the "Advanced options" section of your cluster setting, there you can set them in the "Environment variables" section.
+
+2. Install the project python wheel in the cluster. To install a previously deployed wheel, navigate to the "Install library" section of your cluster settings, where you can explore the Workspace to locate and select the wheel's path.
+
+3. Deploy the workflow to the cluster with the given compute ID.
+```
+databricks bundle deploy --compute-id <compute-id> -t dev demand-forecast
+```
+
+4. Similarly to other workflow, use the "run" command:
+```
+databricks bundle run -t dev demand-forecast
+```
+
+### Working with notebooks and Repos
 
 To start working with your notebooks from a Repos, do the following steps:
 
 1. Add your git provider token to your user settings in Databricks
+
 2. Add your repository to Repos. This could be done via UI, or via CLI command below:
-```bash
+```
 databricks repos create --url <your repo URL> --provider <your-provider>
 ```
-This command will create your personal repository under `/Repos/<username>/dbx_demand_forecast`.
-3. Use `git_source` in your job definition as described [here](https://dbx.readthedocs.io/en/latest/guides/python/devops/notebook/?h=git_source#using-git_source-to-specify-the-remote-source)
+This command will create your personal repository under `/Repos/<username>/spark-forecast`.
 
-## CI/CD pipeline settings
-
-Please set the following secrets or environment variables for your CI provider:
-- `DATABRICKS_HOST`
-- `DATABRICKS_TOKEN`
-
-## Testing and releasing via CI pipeline
-
-- To trigger the CI pipeline, simply push your code to the repository. If CI provider is correctly set, it shall trigger the general testing pipeline
-- To trigger the release pipeline, get the current version from the `dbx_demand_forecast/__init__.py` file and tag the current code version:
-```bash
-git tag -a v<your-project-version> -m "Release tag for version <your-project-version>"
-git push origin --tags
+3. Synchronize your local repository with a Databricks repo.
 ```
+databricks sync --profile <local-path> <remote-path> --watch
+```
+
+4. In `notebooks/sample_notebook.py` there is an example of how to launch the `split` task on a cluster. Note that the cluster must have all dependencies explained in the previous section.
+
+## Arquitecture
+
+![](docs/diagrams-arquitecture.drawio.png)
+### Forecast pipeline
+
+The forecast workflow `<env>-demand-forecast` reads and writes to the `demand-forecast` catalog from a Unity Catalog metastore. The production workflow is scheduled to run every Monday at 23:59 on America/Santiago time. It downloads the sales from a public repository, this information is written to a delta table. All outputs are written to the `demand-forecast` catalog, depending of the development environment it uses the `dev`, `staging` or `prod` database.
+
+### CI/CD pipeline
+
+Continuos Integration (CI) and Continuos Deployment (CD) pipeline is orquestrated Github Actions. In the first place, when a standard pull request is sent to the main branch the following steps: checkout the repository, authenticate to Azure and retrieve Databricks secrets from an Azure Key Vault, set up `python`, install the package manager `poetry`, install dependencies, run unit tests, deploy and launch the `staging-demand-forecast` workflow to a Databricks workspace. In the second place, when a pull request is sent to the main branch where the source branch name starts with `release`, the same steps as the previous pipeline are executed, with the exception that the `prod-demand-forecast` workflow is deployed and is not launched, because the production workflow is scheduled.
+
+## Forecast workflow
+
+Workflows definition are in the `conf/deployment.yml` file. All workflow there are almost identical, with the name `<env>-demand-forecast`, where `<env>` is the environment, with values in `[dev, staging, prod]`. The main difference between those workflow is where they read and write. Additionally, the production workflow is the only one that is orchestrated. The following is the DAG (Directed Acyclic Graph) representation of the workflow.
+
+![](docs/demand-forecast-workflow.png)
+
+### Parameters
+
+Each task in the workflow has its own parameter file in `conf/tasks/<task-name>_config.yml`. This parameter is used in the `python_wheel_task` section in the `databricks.yml` file, as value in `--conf-file /Workspace${workspace.root_path}/<relative_path>` parameter.
+
+Common parameters to all tasks.
+
+- `env`: Dictionary with the environments. There are three environment, `dev`, `staging` and `prod`. This values are used in the `"--env <env>"` parameter, located in the `python_wheel_task` section in the `databricks.yml` file. The `Task` abstract class uses this paremeter to extract environment specific parameters from the file.
+- `execution_date`: String, execution date in format `"<yyyy>-<mm>-<dd>"`. If specified is recommended to set a Monday; otherwise, the last Monday from the current date will be used. Additionally, is used as date boundary, where `date <= execution_date - 1`.
+- `input|output`: Dictionary, every task has to read some input and write some output. If there are multiple inputs or outputs, this parameter is a two-level dictionary, where the keys are the names of the tables; otherwise, it is a one-level dictionary where table names are omitted. Depending on the source format, it could have the following keys: The `path` and `sep` when the source is a CSV, used to locate the file and to indicate column separator character; the `database` and `table` name where it will be written as delta talbe.
+
+Task specific parameters.
+
+- `time_delta`: Integer, used to filter the data by a time window, with date betwen `[start_date, end_date]`, where `end_date = execution_date - 1` and `start_date = execution_date - time_delta`.
+- `group_columns`: List of string, used to identify a serie as unique.
+- `time_column`: String, time column to use as serie time index.
+- `target_column`: String, target column to use as serie value.
+- `metrics`: List of string, list of metrics to compute. By the moment, those names should match the name of a function in the `darts.metrics` module.
+- `model_selection_metric`: String, metric from `metrics` used to select the best model per serie, the critera is the one with minimum value.
+- `test_size`: Integer, number of past days since `execution_date - 1` that are used as part of the test set.
+- `model_params`: Dictonary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
+- `steps`: Integer, number of days since the `execution_date` to forecast.
+- `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
+
+## Tasks
+
+In this section we explain what does each task of the workflow.
+
+### create_database
+
+Create a database in the catalog `demand-forecast` with the name of the `database` parameter if it does not exist.
+
+### ingest
+
+Overwrite the `input` table with the data that comes the CSV file `data/train.csv`. If the parameter `stores` is set it load only these stores. The dataset comes from kaggle (https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data?select=train.csv)
+
+### split
+
+Overwrite the `split` table. This table comes from the `input` and has the same level of granularity. The main functionality of this task is to split the dataset in training and testing sets, and guarante continuity of each time serie, where null values are filled by zero. Each serie is characterized by the `group_columns` parameter with value `["store", "item"]`, columns used to identify a serie as unique; the `time_column` parameter to identifies the column to use as time index, with value `"date"`; and the `target_column` parameter to identifies the column to use as values of the serie, with value `"sales"`. The `test_size` parameter is used to define the rows that are part of the test set, the sales of the last `test_size` days are part of this set, the value used is 14 days.
+
+### models
+
+All model tasks, for instance, `exponential_smoothing`, overwrite the partition `model=<model-name>` in the tables `forecast_on_test` and `all_models_forecast`. It uses `split` table as input. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the`split` task. The `model_params` parameter has model specific hyperparameters as key-value pairs. The `test_size` parameter is used to know how many periods to forecast after training on the training set, this forecast is stored in the `forecast_on_test` table. Similarly, the `steps` parameter is used to know how many periods to forecast after training on the full dataset, this forecast is stored in the `all_models_forecast`.
+
+### evaluation
+
+Overwrite the tables `metrics`, `best_models` and `forecast`. As input it uses tables `split`, `forecast_on_test` and `all_models_forecast`. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the `split` and `model` tasks. The `metrics` parameter has a list of metrics to compute from the input tables `split` (where split column is equal to test) and `forecast_on_test`, the result is written to the `metrics` table, where the metrics computed are `["mape", "rmse", "mae"]` and them must be in `darts.metrics` module . The `model_selection_metric` parameter is used to filter the table `metric` and choose the best model per store-item, the critera is the one with minimum value, this result is written in the `best_models` table. Finnally, the `forecast` table is written, it is produced by the inner join between `all_models_forecast` and `best_models`, with the goal of having only the forecast of the best model per store-item.
+
+## Development methodology
+
+This section detailed the development methodology proposed and used.
+
+![](docs/diagrams-methodology.drawio.png)
+
+### Development environment
+
+The development environment is means to be used by developers to test their early stage developments, such as their feature branch which are in progress. To test their new feature, they can develop it in their favourite IDE. Create some unit test again to run their code. Then deploy the `dev-demand-forecast` on the Databricks workspace, following some of the three development loops mentioned in the [Setting chapter](#setting). When they are done, they can commit their code using the `pre-commit` check and following the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) standard. Is recommended to apply `git rebase` or `git push -f feat/<feat-name>` in order to keep a clean branch before merging with the `main` branch.
+
+### Staging environment
+
+This environment is used to keep a clean main branch with code tested by unit and integration tests. When a pull request is created, where the source branch is not a release branch and the target is the `main` branch a CI pipeline is triggered. The pull request will trigger the pipeline detailed in the `.github/workflows/onpush.yml` file. These steps are: checkout the branch from the repository, authenticate to Azure and retrieve Databricks secrets from an Azure Key Vault, install `python`,  install `poetry`, install dependencies using `poetry`, run `pre-commit` checks, run unit tests, and deploy and launch the `staging-demand-forecast` workflow in the Databrick workspace. Finnally, if all steps were successful and the reviewers approved the pull request, then the merged to the `main` brach is performed.
+
+As a good practice is recommended to do a `pull --rebase origin main` before to send a pull request, this would update the feature branch with respect to the `main` branch. In this way, the CI pipeline will test a merged version instead of a pre-merged version, even if the later is successfull, the post-merged version might not be. Another reason to do this is to keep a linear history, which makes it easier for reviewers to focus only on new changes. A good article about the use of rebase can be found [here](https://www.atlassian.com/git/tutorials/merging-vs-rebasing#:~:text=Merging%20is%20a%20safe%20option,onto%20the%20tip%20of%20main%20.).
+
+### Production environment
+
+To cut a release the following steps must be followed. Creates a new branch with name `release/<version-number>`, upgrade package version in the `pyproject.toml` file, add a git tag with the same `<version-number>`, then push the branch to Azure DevOps, and create a pull request to the main branch. The pull request will trigger the pipeline detailed in the `.github/workflows/onrelease.yml` file. These steps are: checkout the branch from the repository, authenticate to Azure and retrieve Databricks secrets from an Azure Key Vault, install `python`,  install `poetry`, install dependencies using `poetry`, run `pre-commit` checks, run unit tests, deploy the `prod-demand-forecast` workflow on the Databrick workspace, and publish the release. Note that this pipeline does not launch the workflow, because the production workflow is scheduled to run weekly. Usually, this kind of pull request is set with auto-complete, this means that when all steps were successfull the merge to the `main` branch is performed.
