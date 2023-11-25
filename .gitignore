@@ -47,3 +47,5 @@ mlruns/
 *.parquet
 
 .databricks
+
+!train.csv
