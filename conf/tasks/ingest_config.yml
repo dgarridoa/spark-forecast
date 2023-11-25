@@ -6,6 +6,7 @@ env:
     output:
       database: "dev"
       table: "input"
+    stores: [1]
   staging:
     input:
       path: "data/train.csv"
@@ -13,6 +14,7 @@ env:
     output:
       database: "staging"
       table: "input"
+    stores: [1]
   prod:
     input:
       path: "data/train.csv"

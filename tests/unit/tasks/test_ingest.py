@@ -19,11 +19,12 @@ conf = {
         "database": "default",
         "table": "input",
     },
+    "stores": [1],
 }
 
 
 def update_conf(spark: SparkSession):
-    warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir")
+    warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir") or ""
     conf["input"]["path"] = os.path.join(warehouse_dir, "sales")
 
 
