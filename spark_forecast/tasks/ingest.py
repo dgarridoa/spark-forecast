@@ -1,6 +1,7 @@
 import os
 
 import mlflow
+import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from spark_forecast.common import Task
@@ -27,6 +28,9 @@ class IngestionTask(Task):
             self.conf["input"]["sep"],
             SalesSchema,
         )
+
+        if "stores" in self.conf:
+            df = df.filter(F.col("store").isin(self.conf["stores"]))
         return df
 
     def _write_delta_table(self, df: DataFrame) -> None:
