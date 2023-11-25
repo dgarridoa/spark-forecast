@@ -1,21 +1,21 @@
 env:
   dev:
     input:
-      path: "abfss://demand-forecast@databricksucatalog.dfs.core.windows.net/dev/sales"
+      path: "data/train.csv"
       sep: ","
     output:
       database: "dev"
       table: "input"
   staging:
     input:
-      path: "abfss://demand-forecast@databricksucatalog.dfs.core.windows.net/staging/sales"
+      path: "data/train.csv"
       sep: ","
     output:
       database: "staging"
       table: "input"
   prod:
     input:
-      path: "abfss://demand-forecast@databricksucatalog.dfs.core.windows.net/prod/sales"
+      path: "data/train.csv"
       sep: ","
     output:
       database: "prod"
