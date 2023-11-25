@@ -1,3 +1,5 @@
+import os
+
 import mlflow
 from pyspark.sql.dataframe import DataFrame
 
@@ -12,6 +14,13 @@ from spark_forecast.utils import (
 
 class IngestionTask(Task):
     def _read_csv(self) -> DataFrame:
+        file_path = os.getenv("WORKSPACE_FILE_PATH")
+        if file_path:
+            self.conf["input"][
+                "path"
+            ] = "file:{file_path}/{relative_path}".format(
+                file_path=file_path, relative_path=self.conf["input"]["path"]
+            )
         df = read_csv(
             self.spark,
             self.conf["input"]["path"],

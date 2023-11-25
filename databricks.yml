@@ -25,6 +25,7 @@ resources:
               spark.databricks.sql.initial.catalog.name: "demand-forecast"
             spark_env_vars:
               MLFLOW_EXPERIMENT_NAME: "${resources.experiments.mlflow-demand-forecast.name}"
+              WORKSPACE_FILE_PATH: "/Workspace${workspace.root_path}/files"
             num_workers: 1
             node_type_id: "Standard_DS3_v2"
       tasks:
