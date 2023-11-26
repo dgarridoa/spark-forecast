@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-forecast"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Diego Alberto Garrido Amaya <diego.garrido.6568@gmail.com>"]
 readme = "README.md"
