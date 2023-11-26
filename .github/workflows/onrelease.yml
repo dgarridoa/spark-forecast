@@ -60,6 +60,9 @@ jobs:
           echo "Launching unit tests"
           poetry run pytest tests/unit
 
+      - name: Intall databricks cli
+        uses: databricks/setup-cli@main
+
       - name: Deploy the workflow as a job
         env:
           DATABRICKS_HOST: '${{ steps.secrets.outputs.DATABRICKS_HOST }}'
