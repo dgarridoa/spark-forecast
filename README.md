@@ -21,12 +21,12 @@ apt install openjdk-17-jdk
 poetry install --with dev,test
 ```
 
-The commands in the following sections can be ran with `poetry run <command>` or exactly as they are from inside a poetry environment activated with `poetry shell`.
-
 4. Alternatively, create a docker image with all dependecies:
 ```
 docker build -t spark-forecast .
 ```
+
+The commands in the following sections can be ran with `poetry run <command>` or exactly as they are from inside a poetry environment activated with `poetry shell`.
 
 ## Running unit tests
 
@@ -91,7 +91,7 @@ The workflows from a target with `mode: development` as the `dev` on this projec
 
 1. Create a cluster with the environment variables `MLFLOW_EXPERIMENT_NAME` and `WORKSPACE_FILE_PATH` as are set in the `databricks.yml` file. Navigate to the "Advanced options" section of your cluster setting, there you can set them in the "Environment variables" section.
 
-2. Install the project python wheel in the cluster. To install a previously deployed wheel, navigate to the "Install library" section of your cluster settings, where you can explore the Workspace to locate and select the wheel's path.
+2. Install the project python wheel in the cluster. To install a previously deployed wheel, navigate to the "Install library" section of your cluster settings, where you can explore the Workspace to locate and select the wheel's path, or you can upload a local generated wheel running the command `poetry build`, it will be created on the `dist/` directory.
 
 3. Deploy the workflow to the cluster with the given compute ID.
 ```
@@ -115,7 +115,7 @@ databricks repos create --url <your repo URL> --provider <your-provider>
 ```
 This command will create your personal repository under `/Repos/<username>/spark-forecast`.
 
-3. Synchronize your local repository with a Databricks repo.
+3. Synchronize your local repository with a Databricks repo. With this any change on your local repository will be reflected in the Databricks repo.
 ```
 databricks sync --profile <local-path> <remote-path> --watch
 ```
@@ -131,7 +131,7 @@ The forecast workflow `<env>-demand-forecast` reads and writes to the `demand-fo
 
 ### CI/CD pipeline
 
-Continuos Integration (CI) and Continuos Deployment (CD) pipeline is orquestrated Github Actions. In the first place, when a standard pull request is sent to the main branch the following steps: checkout the repository, authenticate to Azure and retrieve Databricks secrets from an Azure Key Vault, set up `python`, install the package manager `poetry`, install dependencies, run unit tests, deploy and launch the `staging-demand-forecast` workflow to a Databricks workspace. In the second place, when a tag is pushed to the repository, the same steps as the previous pipeline are executed, with the exception that the `prod-demand-forecast` workflow is deployed and is not launched, because the production workflow is scheduled.
+Continuos Integration (CI) and Continuos Deployment (CD) pipeline is orquestrated by Github Actions. In the first place, when a standard pull request is sent to the main branch the following steps are executed: checkout the repository, authenticate to Azure and retrieve Databricks secrets from an Azure Key Vault, set up `python`, install the package manager `poetry`, install dependencies, run unit tests, deploy and launch the `staging-demand-forecast` workflow to a Databricks workspace. In the second place, when a tag is pushed to the repository, the same steps as the previous pipeline are executed, with the exception that the `prod-demand-forecast` workflow is deployed and is not launched, because the production workflow is scheduled.
 
 ## Forecast workflow
 
@@ -141,13 +141,13 @@ Workflows definition are in the `conf/deployment.yml` file. All workflow there a
 
 ### Parameters
 
-Each task in the workflow has its own parameter file in `conf/tasks/<task-name>_config.yml`. This parameter is used in the `python_wheel_task` section in the `databricks.yml` file, as value in `--conf-file /Workspace${workspace.root_path}/<relative_path>` parameter.
+Each task in the workflow has its own parameter file in `conf/tasks/<task-name>_config.yml`. This parameter is used in the `python_wheel_task` section in the `databricks.yml` file, as value in `--conf-file /Workspace${workspace.root_path}/files/<relative_path>` parameter.
 
 Common parameters to all tasks.
 
 - `env`: Dictionary with the environments. There are three environment, `dev`, `staging` and `prod`. This values are used in the `"--env <env>"` parameter, located in the `python_wheel_task` section in the `databricks.yml` file. The `Task` abstract class uses this paremeter to extract environment specific parameters from the file.
 - `execution_date`: String, execution date in format `"<yyyy>-<mm>-<dd>"`. If specified is recommended to set a Monday; otherwise, the last Monday from the current date will be used. Additionally, is used as date boundary, where `date <= execution_date - 1`.
-- `input|output`: Dictionary, every task has to read some input and write some output. If there are multiple inputs or outputs, this parameter is a two-level dictionary, where the keys are the names of the tables; otherwise, it is a one-level dictionary where table names are omitted. Depending on the source format, it could have the following keys: The `path` and `sep` when the source is a CSV, used to locate the file and to indicate column separator character; the `database` and `table` name where it will be written as delta talbe.
+- `input|output`: Dictionary, every task has to read some input and write some output. If there are multiple inputs or outputs, this parameter is a two-level dictionary, where the keys are the names of the tables; otherwise, it is a one-level dictionary where table names are omitted. Depending on the source format, it could have the following keys: The `path` and `sep` when the source is a CSV, used to locate the file and to indicate column separator character; the `database` and `table` name where it will be written as delta table.
 
 Task specific parameters.
 
@@ -180,7 +180,7 @@ Overwrite the `split` table. This table comes from the `input` and has the same 
 
 ### models
 
-All model tasks, for instance, `exponential_smoothing`, overwrite the partition `model=<model-name>` in the tables `forecast_on_test` and `all_models_forecast`. It uses `split` table as input. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the`split` task. The `model_params` parameter has model specific hyperparameters as key-value pairs. The `test_size` parameter is used to know how many periods to forecast after training on the training set, this forecast is stored in the `forecast_on_test` table. Similarly, the `steps` parameter is used to know how many periods to forecast after training on the full dataset, this forecast is stored in the `all_models_forecast`.
+All model tasks, for instance, `exponential_smoothing`, overwrite the partition `model=<model-name>` in the tables `forecast_on_test` and `all_models_forecast`. It uses `split` table as input. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the`split` task. The `model_params` parameter has model specific hyperparameters as key-value pairs. The `test_size` parameter is used to know how many periods to forecast after training on the training set, this forecast is stored in the `forecast_on_test` table. Similarly, the `steps` parameter is used to know how many periods to forecast after training on the full dataset, this forecast is stored in the `all_models_forecast` table.
 
 ### evaluation
 
