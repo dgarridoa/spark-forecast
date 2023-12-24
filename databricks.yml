@@ -75,8 +75,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "exponential_smoothing"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "ExponentialSmoothing"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/exponential_smoothing_config.yml"
             - "--env"
@@ -89,8 +91,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "autoarima"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "AutoARIMA"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/autoarima_config.yml"
             - "--env"
@@ -103,8 +107,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "prophet"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "Prophet"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/prophet_config.yml"
             - "--env"
@@ -117,8 +123,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "xgboost"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "XGBModel"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/xgboost_config.yml"
             - "--env"
@@ -131,8 +139,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "random_forest"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "RandomForest"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/random_forest_config.yml"
             - "--env"
@@ -145,8 +155,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "croston"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "Croston"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/croston_config.yml"
             - "--env"
@@ -159,8 +171,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "mean"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "NaiveMean"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/mean_config.yml"
             - "--env"
@@ -173,8 +187,10 @@ resources:
           job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
           python_wheel_task:
             package_name: "spark_forecast"
-            entry_point: "moving_average"
+            entry_point: "model"
             parameters:
+            - "--model-name"
+            - "NaiveMovingAverage"
             - "--conf-file"
             - "/Workspace${workspace.root_path}/files/conf/tasks/moving_average_config.yml"
             - "--env"

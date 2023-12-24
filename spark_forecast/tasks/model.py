@@ -1,3 +1,5 @@
+import argparse
+import sys
 from datetime import date, datetime, timedelta
 from typing import Optional, Type
 
@@ -106,41 +108,33 @@ class ModelTask(Task):
         )
 
 
-def exponential_smoothing_entrypoint():
+MODELS: list[Type[ModelProtocol]] = [
+    ExponentialSmoothing,
+    AutoARIMA,
+    Prophet,
+    XGBModel,
+    RandomForest,
+    Croston,
+    NaiveMean,
+    NaiveMovingAverage,
+]
+
+
+def get_model_class(model_name: str) -> Type[ModelProtocol]:
+    for model_cls in MODELS:
+        if model_cls.__name__ == model_name:
+            return model_cls
+    raise ValueError(f"Model {model_name} not found")
+
+
+def entrypoint():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-name", default="ExponentialSmoothing")
+    model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
+    model = get_model_class(model_name)
     task = ModelTask()
-    task.launch(ExponentialSmoothing)
+    task.launch(model)
 
 
-def autoarima_entrypoint():
-    task = ModelTask()
-    task.launch(AutoARIMA)
-
-
-def prophet_entrypoint():
-    task = ModelTask()
-    task.launch(Prophet)
-
-
-def xgboost_entrypoint():
-    task = ModelTask()
-    task.launch(XGBModel)
-
-
-def random_forest_entrypoint():
-    task = ModelTask()
-    task.launch(RandomForest)
-
-
-def croston_entrypoint():
-    task = ModelTask()
-    task.launch(Croston)
-
-
-def mean_entrypoint():
-    task = ModelTask()
-    task.launch(NaiveMean)
-
-
-def moving_average_entrypoint():
-    task = ModelTask()
-    task.launch(NaiveMovingAverage)
+if __name__ == "__main__":
+    entrypoint()
