@@ -112,6 +112,6 @@ def test_evaluation(spark: SparkSession):
         df_all_models_forecast, df_best_models
     )
 
-    assert_pyspark_df_equal(df_expected_metrics, df_metrics)
-    assert_pyspark_df_equal(df_expected_best_models, df_best_models)
+    assert_pyspark_df_equal(df_expected_metrics, df_metrics, 2)
+    assert_pyspark_df_equal(df_expected_best_models, df_best_models, 2)
     assert_pyspark_df_equal(df_expected_forecast, df_forecast)

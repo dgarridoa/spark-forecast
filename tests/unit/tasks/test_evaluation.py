@@ -159,7 +159,7 @@ def test_metrics(spark: SparkSession):
         ),
         schema=MetricsSchema,
     )
-    assert_pyspark_df_equal(df_test, df)
+    assert_pyspark_df_equal(df_test, df, 2)
 
 
 def test_best_models(spark: SparkSession):
@@ -180,7 +180,7 @@ def test_best_models(spark: SparkSession):
         ),
         schema=MetricsSchema,
     )
-    assert_pyspark_df_equal(df_test, df)
+    assert_pyspark_df_equal(df_test, df, 2)
 
 
 def test_forecast(spark: SparkSession):

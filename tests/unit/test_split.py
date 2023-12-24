@@ -12,7 +12,7 @@ time_delta = 2 * 52 * 7
 group_columns = ["store", "item"]
 time_column = "date"
 target_column = "sales"
-test_size = 14
+test_size = 7
 
 
 def test_split(spark: SparkSession):
