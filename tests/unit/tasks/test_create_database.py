@@ -13,7 +13,7 @@ conf = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def launch_create_database_task(spark: SparkSession):
     logging.info(f"Launching {CreateDataBaseTask.__name__}")
     task = CreateDataBaseTask(spark, conf)

@@ -48,7 +48,7 @@ def create_sales_csv(spark: SparkSession) -> None:
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def launch_ingestion_task(spark: SparkSession):
     logging.info(f"Launching {IngestionTask.__name__}")
     update_conf(spark)
