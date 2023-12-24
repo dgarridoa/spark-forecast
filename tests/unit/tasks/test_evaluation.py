@@ -121,7 +121,7 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def launch_evaluation_task(spark: SparkSession):
     logging.info(f"Launching {EvaluationTask.__name__}")
     create_split_table(spark)

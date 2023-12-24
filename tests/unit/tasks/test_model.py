@@ -66,7 +66,7 @@ def create_split_table(spark: SparkSession) -> None:
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def launch_model_task(spark: SparkSession):
     logging.info(f"Launching {ModelTask.__name__}")
     create_split_table(spark)

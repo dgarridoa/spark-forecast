@@ -53,7 +53,7 @@ def create_input_table(spark: SparkSession) -> None:
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def launch_split_task(spark: SparkSession):
     logging.info(f"Launching {SplitTask.__name__}")
     create_input_table(spark)
