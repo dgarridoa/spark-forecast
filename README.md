@@ -158,6 +158,7 @@ Task specific parameters.
 - `metrics`: List of string, list of metrics to compute. By the moment, those names should match the name of a function in the `darts.metrics` module.
 - `model_selection_metric`: String, metric from `metrics` used to select the best model per serie, the critera is the one with minimum value.
 - `test_size`: Integer, number of past days since `execution_date - 1` that are used as part of the test set.
+- `model_name`: String, must be the name of a model class present in the list `MODELS` from the file `spark_forecast/tasks/model.py`. This is used as the `--model-name <model-name>` argument in the `python_wheel_task` related to forecasting.
 - `model_params`: Dictonary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
 - `steps`: Integer, number of days since the `execution_date` to forecast.
 - `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
