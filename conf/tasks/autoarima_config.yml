@@ -13,6 +13,8 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
+    model_params:
+      maxiter: 10
     test_size: 14
     steps: 7
     execution_date: "2018-01-01"
@@ -31,6 +33,8 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
+    model_params:
+      maxiter: 10
     test_size: 14
     steps: 7
     execution_date: "2018-01-01"
@@ -49,6 +53,8 @@ env:
     group_columns: ["store", "item"]
     time_column: "date"
     target_column: "sales"
+    model_params:
+      maxiter: 10
     test_size: 14
     steps: 7
     execution_date: "2018-01-01"
