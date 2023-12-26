@@ -218,7 +218,6 @@ resources:
             - "${bundle.target}"
           libraries:
             - whl: ./dist/*.whl
-
 targets:
   dev:
     mode: development
@@ -241,7 +240,8 @@ targets:
           job_clusters:
             - job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
               new_cluster:
-                num_workers: 3
+                driver_node_type_id: "Standard_DS3_v2"
+                node_type_id: "Standard_F64s_v2"
           email_notifications:
             on_start: ["diego.garrido.6568@gmail.com"]
             on_success: ["diego.garrido.6568@gmail.com"]
