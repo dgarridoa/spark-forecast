@@ -93,6 +93,12 @@ class ModelTask(Task):
             mlflow.set_tags(self.conf)
 
         df = self._read_delta_table()
+        num_partitions = (
+            df.select(*self.conf["group_columns"]).distinct().cache().count()
+        )
+        df = df.repartition(
+            num_partitions, *self.conf["group_columns"]
+        ).cache()
         df_train = df.filter(df["split"] == "train")
 
         df_forecast_on_test = self.fit_predict(
