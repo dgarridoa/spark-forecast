@@ -187,6 +187,12 @@ All model tasks, for instance, `exponential_smoothing`, overwrite the partition 
 
 Overwrite the tables `metrics`, `best_models` and `forecast`. As input it uses tables `split`, `forecast_on_test` and `all_models_forecast`. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the `split` and `model` tasks. The `metrics` parameter has a list of metrics to compute from the input tables `split` (where split column is equal to test) and `forecast_on_test`, the result is written to the `metrics` table, where the metrics computed are `["mape", "rmse", "mae"]` and them must be in `darts.metrics` module . The `model_selection_metric` parameter is used to filter the table `metric` and choose the best model per store-item, the critera is the one with minimum value, this result is written in the `best_models` table. Finnally, the `forecast` table is written, it is produced by the inner join between `all_models_forecast` and `best_models`, with the goal of having only the forecast of the best model per store-item.
 
+## Data lineage
+
+Data lineage graph extracted from the Unity Catalog, specifically the `demand-forecast` catalog and the `prod` database.
+
+![](docs/demand-forecast-lineage.png)
+
 ## Development methodology
 
 This section detailed the development methodology proposed and used.
