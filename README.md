@@ -26,7 +26,7 @@ poetry install --with dev,test
 docker build -t spark-forecast .
 ```
 
-The commands in the following sections can be ran with `poetry run <command>` or exactly as they are from inside a poetry environment activated with `poetry shell`.
+The commands in the following sections can be run with `poetry run <command>` or exactly as they are from inside a virtual environment activated with `poetry shell`.
 
 ## Running unit tests
 
@@ -73,7 +73,7 @@ databricks bundle deploy --target dev demand-forecast
 (Note that "dev" is the default target, so the `--target` parameter
 is optional here. If the workflow is not specified all are deployed)
 
-You can find that job by opening your workpace and clicking on **Workflows**.
+You can find that job by opening your workpace and clicking on **Workflows**. Target with development mode are deployed with the prefix `[<target> ${workspace.current_user.userName}]` to avoid user collision.
 
 Similarly, to deploy a production copy, type:
 ```
@@ -135,7 +135,7 @@ Continuos Integration (CI) and Continuos Deployment (CD) pipeline is orquestrate
 
 ## Forecast workflow
 
-Workflows definition are in the `conf/deployment.yml` file. All workflow there are almost identical, with the name `<env>-demand-forecast`, where `<env>` is the environment, with values in `[dev, staging, prod]`. The main difference between those workflow is where they read and write. Additionally, the production workflow is the only one that is orchestrated. The following is the DAG (Directed Acyclic Graph) representation of the workflow.
+Workflows definition are in the `databricks.yml` file. It has the `<target>-demand-forecast` workflow, where `<target>` is the target or environment, with values in `[dev, staging, prod]`. The main difference between them is where they read and write. Additionally, the production target is the only one that is orchestrated. The following is the DAG (Directed Acyclic Graph) representation of the workflow.
 
 ![](docs/demand-forecast-workflow.png)
 
@@ -159,7 +159,7 @@ Task specific parameters.
 - `model_selection_metric`: String, metric from `metrics` used to select the best model per serie, the critera is the one with minimum value.
 - `test_size`: Integer, number of past days since `execution_date - 1` that are used as part of the test set.
 - `model_name`: String, must be the name of a model class present in the list `MODELS` from the file `spark_forecast/tasks/model.py`. This is used as the `--model-name <model-name>` argument in the `python_wheel_task` related to forecasting.
-- `model_params`: Dictonary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
+- `model_params`: Dictionary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
 - `steps`: Integer, number of days since the `execution_date` to forecast.
 - `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
 
