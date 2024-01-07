@@ -22,12 +22,31 @@ from spark_forecast.utils import (
     write_delta_table,
 )
 
+MODELS: list[Type[ModelProtocol]] = [
+    ExponentialSmoothing,
+    AutoARIMA,
+    Prophet,
+    XGBModel,
+    RandomForest,
+    Croston,
+    NaiveMean,
+    NaiveMovingAverage,
+]
+
+
+def get_model_class(model_name: str) -> Type[ModelProtocol]:
+    for model_cls in MODELS:
+        if model_cls.__name__ == model_name:
+            return model_cls
+    raise ValueError(f"Model {model_name} not found")
+
 
 class ModelTask(Task):
     def __init__(
         self,
         spark: Optional[SparkSession] = None,
         init_conf: Optional[dict] = None,
+        model_cls: Optional[Type[ModelProtocol]] = None,
     ) -> None:
         super().__init__(spark, init_conf)
         if "execution_date" not in self.conf:
@@ -39,6 +58,13 @@ class ModelTask(Task):
                 self.conf["execution_date"], "%Y-%m-%d"
             ).date()
         self.conf["execution_date"] = execution_date
+
+        if not model_cls:
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--model-name", default="ExponentialSmoothing")
+            model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
+            model_cls = get_model_class(model_name)
+        self.model_cls = model_cls
 
     def _read_delta_table(self) -> DataFrame:
         df = read_delta_table(
@@ -60,9 +86,7 @@ class ModelTask(Task):
             ["model"],
         )
 
-    def fit_predict(
-        self, model_cls: Type[ModelProtocol], df_train: DataFrame, steps: int
-    ) -> DataFrame:
+    def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
         group_columns: list[str] = self.conf["group_columns"]
         time_column: str = self.conf["time_column"]
         target_column: str = self.conf["target_column"]
@@ -73,7 +97,7 @@ class ModelTask(Task):
             group_columns=group_columns,
             time_column=time_column,
             target_column=target_column,
-            model_cls=model_cls,
+            model_cls=self.model_cls,
             model_params=model_params,
             freq=freq,
         )
@@ -84,8 +108,8 @@ class ModelTask(Task):
         )
         return df_predict
 
-    def launch(self, model_cls: Type[ModelProtocol]):
-        run_name = f"{self.__class__.__name__}[{model_cls.__name__}]"
+    def launch(self):
+        run_name = f"{self.__class__.__name__}[{self.model_cls.__name__}]"
         self.logger.info(f"Launching {run_name}")
 
         set_mlflow_experiment()
@@ -102,9 +126,9 @@ class ModelTask(Task):
         df_train = df.filter(df["split"] == "train")
 
         df_forecast_on_test = self.fit_predict(
-            model_cls, df_train, self.conf["test_size"]
+            df_train, self.conf["test_size"]
         )
-        df_forecast = self.fit_predict(model_cls, df, self.conf["steps"])
+        df_forecast = self.fit_predict(df, self.conf["steps"])
 
         self._write_delta_table(
             df_forecast_on_test, self.conf["output"]["forecast_on_test"]
@@ -114,32 +138,9 @@ class ModelTask(Task):
         )
 
 
-MODELS: list[Type[ModelProtocol]] = [
-    ExponentialSmoothing,
-    AutoARIMA,
-    Prophet,
-    XGBModel,
-    RandomForest,
-    Croston,
-    NaiveMean,
-    NaiveMovingAverage,
-]
-
-
-def get_model_class(model_name: str) -> Type[ModelProtocol]:
-    for model_cls in MODELS:
-        if model_cls.__name__ == model_name:
-            return model_cls
-    raise ValueError(f"Model {model_name} not found")
-
-
 def entrypoint():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model-name", default="ExponentialSmoothing")
-    model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
-    model = get_model_class(model_name)
     task = ModelTask()
-    task.launch(model)
+    task.launch()
 
 
 if __name__ == "__main__":
