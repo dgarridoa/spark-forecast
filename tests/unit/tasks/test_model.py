@@ -70,8 +70,8 @@ def create_split_table(spark: SparkSession) -> None:
 def launch_model_task(spark: SparkSession):
     logging.info(f"Launching {ModelTask.__name__}")
     create_split_table(spark)
-    task = ModelTask(spark, conf)
-    task.launch(ExponentialSmoothing)
+    task = ModelTask(spark, conf, ExponentialSmoothing)
+    task.launch()
     logging.info(f"Launching the {ModelTask.__name__} - done")
 
 
