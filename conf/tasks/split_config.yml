@@ -11,7 +11,7 @@ env:
     target_column: "sales"
     test_size: 14
     execution_date: "2018-01-01"
-    time_delta: 727
+    time_delta: 728
     freq: "1D"
   staging:
     input:
@@ -25,7 +25,7 @@ env:
     target_column: "sales"
     test_size: 14
     execution_date: "2018-01-01"
-    time_delta: 727
+    time_delta: 728
     freq: "1D"
   prod:
     input:
@@ -39,5 +39,5 @@ env:
     target_column: "sales"
     test_size: 14
     execution_date: "2018-01-01"
-    time_delta: 727
+    time_delta: 728
     freq: "1D"
