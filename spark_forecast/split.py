@@ -17,7 +17,7 @@ class Split:
         target_column: str,
         test_size: int = 14,
         execution_date: Optional[date] = None,
-        time_delta: int = 2 * 52 * 7 - 1,
+        time_delta: int = 2 * 52 * 7,
         freq: str = "1D",
     ):
         self.group_columns = group_columns
