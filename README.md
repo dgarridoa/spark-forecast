@@ -56,6 +56,7 @@ In the `tests/unit/conftest.py` you'll also find useful testing primitives, such
 ## Running on Databricks
 
 ### Setting
+
 Install the Databricks CLI from https://docs.databricks.com/dev-tools/cli/databricks-cli.html
 
 Authenticate to your Databricks workspace:
@@ -67,7 +68,7 @@ databricks configure
 
 Deploy demand-forecast from dev target.
 ```
-databricks bundle deploy --target dev demand-forecast
+databricks bundle deploy --target dev
 ```
 
 (Note that "dev" is the default target, so the `--target` parameter
@@ -125,6 +126,7 @@ databricks sync --profile <local-path> <remote-path> --watch
 ## Arquitecture
 
 ![](docs/diagrams-arquitecture.drawio.png)
+
 ### Forecast pipeline
 
 The forecast workflow `<env>-demand-forecast` reads and writes to the `demand-forecast` catalog from a Unity Catalog metastore. The production workflow is scheduled to run every Monday at 23:59 on America/Santiago time. It downloads the sales from a public repository, this information is written to a delta table. All outputs are written to the `demand-forecast` catalog, depending of the development environment it uses the `dev`, `staging` or `prod` database.
