@@ -1,3 +1,4 @@
+from dataclasses import field
 from typing import (
     Optional,
     Protocol,
@@ -37,7 +38,7 @@ class Model:
         time_column: str,
         target_column: str,
         model_cls: Type[T],
-        model_params: dict = {},
+        model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ):
         self.group_columns = group_columns
@@ -80,7 +81,7 @@ class Model:
         time_column: str,
         target_column: str,
         model_cls: Type[ModelProtocol],
-        model_params: dict = {},
+        model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ) -> pd.DataFrame:
         model = Model(
@@ -103,7 +104,7 @@ class DistributedModel:
         time_column: str,
         target_column: str,
         model_cls: Type[ModelProtocol],
-        model_params: dict = {},
+        model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ):
         self.group_columns = group_columns
