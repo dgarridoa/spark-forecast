@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 pyyaml = "*"
-darts = "0.26.0"
+darts = "^0.30.0"
 torch = ">=1.13.1,<2"
 prophet = ">=1.1.1"
 protobuf = "<=3.20"
