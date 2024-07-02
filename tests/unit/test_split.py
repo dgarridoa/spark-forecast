@@ -7,12 +7,13 @@ from spark_forecast.schema import SalesSchema, SplitSchema
 from spark_forecast.split import Split
 from tests.utils import assert_pyspark_df_equal
 
-execution_date = date(2022, 9, 12)
-time_delta = 2 * 52 * 7
 group_columns = ["store", "item"]
 time_column = "date"
 target_column = "sales"
+execution_date = date(2022, 9, 12)
+time_delta = 2 * 52 * 7
 test_size = 7
+freq = "1D"
 
 
 def test_split(spark: SparkSession):
@@ -51,9 +52,10 @@ def test_split(spark: SparkSession):
         group_columns,
         time_column,
         target_column,
-        test_size,
         execution_date,
         time_delta,
+        test_size,
+        freq,
     )
     df_split = split.transform(df_sales, SplitSchema)
 

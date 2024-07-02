@@ -1,6 +1,5 @@
 import copy
-from datetime import date, timedelta
-from typing import Optional
+from datetime import date
 
 import pandas as pd
 import pyspark.sql.functions as F
@@ -15,9 +14,9 @@ class Split:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        test_size: int = 14,
-        execution_date: Optional[date] = None,
+        execution_date: date,
         time_delta: int = 2 * 52 * 7,
+        test_size: int = 14,
         freq: str = "1D",
     ):
         self.group_columns = group_columns
@@ -25,19 +24,14 @@ class Split:
         self.target_column = target_column
         self.test_size = test_size
         self.freq = freq
-
-        if execution_date is None:
-            execution_date = date.today() - timedelta(
-                days=date.today().weekday()
-            )
         self.execution_date = execution_date
         self.time_delta = time_delta
-        self.end_date = self.execution_date - pd.Timedelta(days=1)
-        self.start_date = self.execution_date - self.time_delta * pd.Timedelta(
-            self.freq
+        self.start_date = self.execution_date - pd.Timedelta(
+            self.time_delta * self.freq  # type: ignore
         )
-        self.end_train_date = self.end_date - self.test_size * pd.Timedelta(
-            self.freq
+        self.end_date = self.execution_date - pd.Timedelta(days=1)  # type: ignore
+        self.end_train_date = self.end_date - pd.Timedelta(
+            self.test_size * self.freq
         )
 
     def add_dummy_date(self, df: pd.DataFrame) -> None:
