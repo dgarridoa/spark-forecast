@@ -8,6 +8,7 @@ from typing import (
     runtime_checkable,
 )
 
+import darts.models
 import pandas as pd
 from darts.timeseries import TimeSeries
 from pyspark.sql.dataframe import DataFrame
@@ -30,6 +31,27 @@ class ModelProtocol(Protocol):
 
 T = TypeVar("T", bound=ModelProtocol)
 
+MODELS = darts.models
+
+
+def model_cls_validator(model_cls: str) -> str:
+    try:
+        _ = getattr(MODELS, model_cls)
+    except AttributeError:
+        raise ValueError(f"Model {model_cls} not found in {MODELS}")
+    return model_cls
+
+
+def get_model_cls(model_cls: str | Type[T]) -> Type[T]:
+    if isinstance(model_cls, str):
+        try:
+            _model_cls: Type[T] = getattr(MODELS, model_cls)
+        except AttributeError:
+            raise ValueError(f"Model {model_cls} not found in {MODELS}")
+    else:
+        _model_cls: Type[T] = model_cls
+    return _model_cls
+
 
 class Model:
     def __init__(
@@ -37,14 +59,15 @@ class Model:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        model_cls: Type[T],
+        model_cls: str | Type[T],
         model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ):
         self.group_columns = group_columns
         self.time_column = time_column
         self.target_column = target_column
-        self.model = model_cls(**model_params)
+        _model_cls = get_model_cls(model_cls)
+        self.model = _model_cls(**model_params)
         self.freq = freq
 
     def set_group_columns_values(self, df: pd.DataFrame) -> None:
@@ -80,7 +103,7 @@ class Model:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        model_cls: Type[ModelProtocol],
+        model_cls: str | Type[ModelProtocol],
         model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ) -> pd.DataFrame:
@@ -103,7 +126,7 @@ class DistributedModel:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        model_cls: Type[ModelProtocol],
+        model_cls: str | Type[ModelProtocol],
         model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ):

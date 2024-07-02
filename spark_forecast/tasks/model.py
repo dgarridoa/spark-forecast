@@ -1,20 +1,14 @@
 import argparse
 import sys
 from datetime import date, datetime, timedelta
-from typing import Optional, Type
+from typing import Optional, Type, TypeVar
 
 import mlflow
-from darts.models import NaiveMean, NaiveMovingAverage, Prophet
-from darts.models.forecasting.auto_arima import AutoARIMA
-from darts.models.forecasting.croston import Croston
-from darts.models.forecasting.exponential_smoothing import ExponentialSmoothing
-from darts.models.forecasting.random_forest import RandomForest
-from darts.models.forecasting.xgboost import XGBModel
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from spark_forecast.common import Task
-from spark_forecast.model import DistributedModel, ModelProtocol
+from spark_forecast.model import DistributedModel, ModelProtocol, get_model_cls
 from spark_forecast.schema import ForecastSchema
 from spark_forecast.utils import (
     read_delta_table,
@@ -22,23 +16,7 @@ from spark_forecast.utils import (
     write_delta_table,
 )
 
-MODELS: list[Type[ModelProtocol]] = [
-    ExponentialSmoothing,
-    AutoARIMA,
-    Prophet,
-    XGBModel,
-    RandomForest,
-    Croston,
-    NaiveMean,
-    NaiveMovingAverage,
-]
-
-
-def get_model_class(model_name: str) -> Type[ModelProtocol]:
-    for model_cls in MODELS:
-        if model_cls.__name__ == model_name:
-            return model_cls
-    raise ValueError(f"Model {model_name} not found")
+T = TypeVar("T", bound=ModelProtocol)
 
 
 class ModelTask(Task):
@@ -46,7 +24,7 @@ class ModelTask(Task):
         self,
         spark: Optional[SparkSession] = None,
         init_conf: Optional[dict] = None,
-        model_cls: Optional[Type[ModelProtocol]] = None,
+        model_cls: str | Type[T] | None = None,
     ) -> None:
         super().__init__(spark, init_conf)
         if "execution_date" not in self.conf:
@@ -63,8 +41,12 @@ class ModelTask(Task):
             parser = argparse.ArgumentParser()
             parser.add_argument("--model-name", default="ExponentialSmoothing")
             model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
-            model_cls = get_model_class(model_name)
-        self.model_cls = model_cls
+            _model_cls: Type[T] = get_model_cls(model_name)
+        elif isinstance(model_cls, str):
+            _model_cls: Type[T] = get_model_cls(model_cls)
+        else:
+            _model_cls: Type[T] = model_cls
+        self.model_cls = _model_cls
 
     def _read_delta_table(self) -> DataFrame:
         df = read_delta_table(
