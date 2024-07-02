@@ -25,9 +25,9 @@ conf = {
     "group_columns": ["store", "item"],
     "time_column": "date",
     "target_column": "sales",
-    "test_size": 5,
     "execution_date": "2018-12-31",
     "time_delta": 727,
+    "test_size": 5,
     "freq": "1D",
 }
 

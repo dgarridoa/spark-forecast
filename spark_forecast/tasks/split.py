@@ -54,9 +54,9 @@ class SplitTask(Task):
             group_columns=self.conf["group_columns"],
             time_column=self.conf["time_column"],
             target_column=self.conf["target_column"],
-            test_size=self.conf["test_size"],
             execution_date=self.conf["execution_date"],
             time_delta=self.conf["time_delta"],
+            test_size=self.conf["test_size"],
             freq=self.conf["freq"],
         )
         df_split = split.transform(df, SplitSchema)
