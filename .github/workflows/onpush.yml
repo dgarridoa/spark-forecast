@@ -5,6 +5,9 @@ on:
     types: [ opened, synchronize ]
     branches:
       - 'main'
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
 
 jobs:
   ci-pipeline:
