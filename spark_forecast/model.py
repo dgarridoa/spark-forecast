@@ -103,7 +103,7 @@ class Model:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        model_cls: str | Type[ModelProtocol],
+        model_cls: str | Type[T],
         model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ) -> pd.DataFrame:
@@ -126,7 +126,7 @@ class DistributedModel:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        model_cls: str | Type[ModelProtocol],
+        model_cls: str | Type[T],
         model_params: dict = field(default_factory=dict),
         freq: str = "1D",
     ):
