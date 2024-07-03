@@ -1,14 +1,13 @@
 import argparse
 import sys
-from datetime import date, datetime, timedelta
-from typing import Optional, Type, TypeVar
+from typing import TypeVar
 
 import mlflow
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-from spark_forecast.common import Task
-from spark_forecast.model import DistributedModel, ModelProtocol, get_model_cls
+from spark_forecast.model import DistributedModel, ModelProtocol
+from spark_forecast.params import ModelParams, Params, read_config
 from spark_forecast.schema import ForecastSchema
 from spark_forecast.utils import (
     read_delta_table,
@@ -19,69 +18,37 @@ from spark_forecast.utils import (
 T = TypeVar("T", bound=ModelProtocol)
 
 
-class ModelTask(Task):
+class ModelTask:
     def __init__(
         self,
-        spark: Optional[SparkSession] = None,
-        init_conf: Optional[dict] = None,
-        model_cls: str | Type[T] | None = None,
+        params: ModelParams,
     ) -> None:
-        super().__init__(spark, init_conf)
-        if "execution_date" not in self.conf:
-            execution_date = date.today() - timedelta(
-                days=date.today().weekday()
-            )
-        else:
-            execution_date = datetime.strptime(
-                self.conf["execution_date"], "%Y-%m-%d"
-            ).date()
-        self.conf["execution_date"] = execution_date
+        self.params = params
 
-        if not model_cls:
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--model-name", default="ExponentialSmoothing")
-            model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
-            _model_cls: Type[T] = get_model_cls(model_name)
-        elif isinstance(model_cls, str):
-            _model_cls: Type[T] = get_model_cls(model_cls)
-        else:
-            _model_cls: Type[T] = model_cls
-        self.model_cls = _model_cls
-
-    def _read_delta_table(self) -> DataFrame:
-        df = read_delta_table(
-            self.spark,
-            self.conf["input"]["database"],
-            self.conf["input"]["table"],
-        )
+    def read(self, spark: SparkSession) -> DataFrame:
+        df = read_delta_table(spark, self.params.database, "split")
         return df
 
-    def _write_delta_table(
-        self, df: DataFrame, output_dict: dict[str, str]
+    def write(
+        self, spark: SparkSession, df: DataFrame, table_name: str
     ) -> None:
         write_delta_table(
-            self.spark,
+            spark,
             df,
             ForecastSchema,
-            output_dict["database"],
-            output_dict["table"],
+            self.params.database,
+            table_name,
             ["model"],
         )
 
     def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
-        group_columns: list[str] = self.conf["group_columns"]
-        time_column: str = self.conf["time_column"]
-        target_column: str = self.conf["target_column"]
-        model_params: dict = self.conf.get("model_params", {})
-        freq: str = self.conf["freq"]
-
         distributed_model = DistributedModel(
-            group_columns=group_columns,
-            time_column=time_column,
-            target_column=target_column,
-            model_cls=self.model_cls,
-            model_params=model_params,
-            freq=freq,
+            group_columns=self.params.group_columns,
+            time_column=self.params.time_column,
+            target_column=self.params.target_column,
+            model_cls=self.params.model_cls,
+            model_params=self.params.model_params,
+            freq=self.params.freq,
         )
         df_predict = distributed_model.fit_predict(
             df_train=df_train,
@@ -90,39 +57,38 @@ class ModelTask(Task):
         )
         return df_predict
 
-    def launch(self):
-        run_name = f"{self.__class__.__name__}[{self.model_cls.__name__}]"
-        self.logger.info(f"Launching {run_name}")
+    def launch(self, spark: SparkSession):
+        run_name = f"{self.__class__.__name__}[{self.params.model_cls}]"
 
         set_mlflow_experiment()
         with mlflow.start_run(run_name=run_name):
-            mlflow.set_tags(self.conf)
+            mlflow.set_tags(self.params.__dict__)
 
-        df = self._read_delta_table()
+        df = self.read(spark)
         num_partitions = (
-            df.select(*self.conf["group_columns"]).distinct().cache().count()
+            df.select(*self.params.group_columns).distinct().cache().count()
         )
-        df = df.repartition(
-            num_partitions, *self.conf["group_columns"]
-        ).cache()
+        df = df.repartition(num_partitions, *self.params.group_columns).cache()
         df_train = df.filter(df["split"] == "train")
 
-        df_forecast_on_test = self.fit_predict(
-            df_train, self.conf["test_size"]
-        )
-        df_forecast = self.fit_predict(df, self.conf["steps"])
+        df_forecast_on_test = self.fit_predict(df_train, self.params.test_size)
+        df_forecast = self.fit_predict(df, self.params.steps)
 
-        self._write_delta_table(
-            df_forecast_on_test, self.conf["output"]["forecast_on_test"]
-        )
-        self._write_delta_table(
-            df_forecast, self.conf["output"]["all_models_forecast"]
-        )
+        self.write(spark, df_forecast_on_test, "forecast_on_test")
+        self.write(spark, df_forecast, "all_models_forecast")
 
 
 def entrypoint():
-    task = ModelTask()
-    task.launch()
+    config = read_config()
+    params = Params(**config)
+    spark = SparkSession.builder.getOrCreate()  # type: ignore
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-name", default="ExponentialSmoothing")
+    model_name = parser.parse_known_args(sys.argv[1:])[0].model_name
+
+    task = ModelTask(params.models[model_name])
+    task.launch(spark)
 
 
 if __name__ == "__main__":

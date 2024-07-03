@@ -1,11 +1,8 @@
-from datetime import date, datetime, timedelta
-from typing import Optional
-
 import mlflow
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-from spark_forecast.common import Task
+from spark_forecast.params import Params, SplitParams, read_config
 from spark_forecast.schema import SplitSchema
 from spark_forecast.split import Split
 from spark_forecast.utils import (
@@ -15,68 +12,59 @@ from spark_forecast.utils import (
 )
 
 
-class SplitTask(Task):
+class SplitTask:
     def __init__(
         self,
-        spark: Optional[SparkSession] = None,
-        init_conf: Optional[dict] = None,
+        params: SplitParams,
     ) -> None:
-        super().__init__(spark, init_conf)
-        if "execution_date" not in self.conf:
-            execution_date = date.today() - timedelta(
-                days=date.today().weekday()
-            )
-        else:
-            execution_date = datetime.strptime(
-                self.conf["execution_date"], "%Y-%m-%d"
-            ).date()
-        self.conf["execution_date"] = execution_date
+        self.params = params
 
-    def _read_delta_table(self) -> DataFrame:
+    def read(self, spark: SparkSession) -> DataFrame:
         df = read_delta_table(
-            self.spark,
-            self.conf["input"]["database"],
-            self.conf["input"]["table"],
+            spark,
+            self.params.database,
+            "input",
         )
         return df
 
-    def _write_delta_table(self, df: DataFrame) -> None:
+    def write(self, spark: SparkSession, df: DataFrame) -> None:
         write_delta_table(
-            self.spark,
+            spark,
             df,
             SplitSchema,
-            self.conf["output"]["database"],
-            self.conf["output"]["table"],
+            self.params.database,
+            "split",
         )
 
     def transform(self, df: DataFrame) -> DataFrame:
         split = Split(
-            group_columns=self.conf["group_columns"],
-            time_column=self.conf["time_column"],
-            target_column=self.conf["target_column"],
-            execution_date=self.conf["execution_date"],
-            time_delta=self.conf["time_delta"],
-            test_size=self.conf["test_size"],
-            freq=self.conf["freq"],
+            group_columns=self.params.group_columns,
+            time_column=self.params.time_column,
+            target_column=self.params.target_column,
+            execution_date=self.params.execution_date,
+            time_delta=self.params.time_delta,
+            test_size=self.params.test_size,
+            freq=self.params.freq,
         )
         df_split = split.transform(df, SplitSchema)
         return df_split
 
-    def launch(self):
-        self.logger.info(f"Launching {self.__class__.__name__}")
-
+    def launch(self, spark: SparkSession):
         set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
-            mlflow.set_tags(self.conf)
+            mlflow.set_tags(self.params.__dict__)
 
-        df = self._read_delta_table()
+        df = self.read(spark)
         df_split = self.transform(df)
-        self._write_delta_table(df_split)
+        self.write(spark, df_split)
 
 
 def entrypoint():
-    task = SplitTask()
-    task.launch()
+    config = read_config()
+    params = Params(**config)
+    spark = SparkSession.builder.getOrCreate()  # type: ignore
+    task = SplitTask(params.split)
+    task.launch(spark)
 
 
 if __name__ == "__main__":

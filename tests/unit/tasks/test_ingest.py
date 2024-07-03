@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
+from spark_forecast.params import IngestionParams
 from spark_forecast.schema import SalesSchema
 from spark_forecast.tasks.ingest import IngestionTask
 from spark_forecast.utils import read_delta_table
@@ -14,18 +15,19 @@ from tests.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
-    "input": {"path": "", "sep": ","},
-    "output": {
-        "database": "default",
-        "table": "input",
-    },
+    "tz": "America/Santiago",
+    "execution_date": "2018-12-31",
+    "database": "default",
+    "path": "",
+    "sep": ",",
     "stores": [1],
 }
+params = IngestionParams.model_validate(conf)
 
 
 def update_conf(spark: SparkSession):
     warehouse_dir = spark.conf.get("spark.hive.metastore.warehouse.dir") or ""
-    conf["input"]["path"] = os.path.join(warehouse_dir, "sales")
+    params.path = os.path.join(warehouse_dir, "sales")
 
 
 def create_sales_csv(spark: SparkSession) -> None:
@@ -41,9 +43,9 @@ def create_sales_csv(spark: SparkSession) -> None:
         schema=SalesSchema,
     )
     df.write.csv(
-        conf["input"]["path"],
+        params.path,
         header=True,
-        sep=conf["input"]["sep"],
+        sep=params.sep,
         mode="overwrite",
     )
 
@@ -53,8 +55,8 @@ def launch_ingestion_task(spark: SparkSession):
     logging.info(f"Launching {IngestionTask.__name__}")
     update_conf(spark)
     create_sales_csv(spark)
-    ingestion_task = IngestionTask(spark, conf)
-    ingestion_task.launch()
+    ingestion_task = IngestionTask(params)
+    ingestion_task.launch(spark)
     logging.info(f"Launching the {IngestionTask.__name__} - done")
 
 
@@ -68,9 +70,7 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_input(spark: SparkSession):
-    df = read_delta_table(
-        spark, conf["output"]["database"], conf["output"]["table"]
-    )
+    df = read_delta_table(spark, params.database, "input")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -82,5 +82,4 @@ def test_input(spark: SparkSession):
         ),
         schema=SalesSchema,
     )
-
     assert_pyspark_df_equal(df_test, df)

@@ -1,25 +1,32 @@
 import mlflow
+from pyspark.sql import SparkSession
 
-from spark_forecast.common import Task
+from spark_forecast.params import (
+    CommonParams,
+    Params,
+    read_config,
+)
 from spark_forecast.utils import set_mlflow_experiment
 
 
-class CreateDataBaseTask(Task):
-    def launch(self):
-        self.logger.info(f"Launching {self.__class__.__name__}")
+class CreateDataBaseTask:
+    def __init__(self, params: CommonParams):
+        self.params = params
 
+    def launch(self, spark: SparkSession):
         set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
-            mlflow.set_tags(self.conf)
+            mlflow.set_tags(self.params.__dict__)
 
-        self.spark.sql(
-            f"CREATE DATABASE IF NOT EXISTS {self.conf['database']}"
-        )
+        spark.sql(f"CREATE DATABASE IF NOT EXISTS {self.params.database}")
 
 
 def entrypoint():
-    task = CreateDataBaseTask()
-    task.launch()
+    config = read_config()
+    params = Params(**config)
+    spark = SparkSession.builder.getOrCreate()  # type: ignore
+    task = CreateDataBaseTask(params.split)
+    task.launch(spark)
 
 
 if __name__ == "__main__":

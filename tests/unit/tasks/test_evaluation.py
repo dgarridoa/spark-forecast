@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
+from spark_forecast.params import EvaluationParams
 from spark_forecast.schema import ForecastSchema, MetricsSchema, SplitSchema
 from spark_forecast.tasks.evaluation import EvaluationTask
 from spark_forecast.utils import read_delta_table, write_delta_table
@@ -14,42 +15,17 @@ from tests.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
-    "input": {
-        "split": {
-            "database": "default",
-            "table": "split",
-        },
-        "forecast_on_test": {
-            "database": "default",
-            "table": "forecast_on_test",
-        },
-        "all_models_forecast": {
-            "database": "default",
-            "table": "all_models_forecast",
-        },
-    },
-    "output": {
-        "metrics": {
-            "database": "default",
-            "table": "metrics",
-        },
-        "best_models": {
-            "database": "default",
-            "table": "best_models",
-        },
-        "forecast": {
-            "database": "default",
-            "table": "forecast",
-        },
-    },
+    "tz": "America/Santiago",
+    "execution_date": "2018-12-31",
+    "database": "default",
     "group_columns": ["store", "item"],
     "time_column": "date",
     "target_column": "sales",
     "metrics": ["rmse", "mae"],
     "model_selection_metric": "mae",
-    "execution_date": "2018-12-31",
     "freq": "1D",
 }
+params = EvaluationParams.model_validate(conf)
 
 
 def create_split_table(spark: SparkSession) -> None:
@@ -66,13 +42,7 @@ def create_split_table(spark: SparkSession) -> None:
         schema=SplitSchema,
     )
 
-    write_delta_table(
-        spark,
-        df,
-        SplitSchema,
-        conf["input"]["split"]["database"],
-        conf["input"]["split"]["table"],
-    )
+    write_delta_table(spark, df, SplitSchema, params.database, "split")
 
 
 def create_forecast_on_test_table(spark: SparkSession) -> None:
@@ -92,8 +62,8 @@ def create_forecast_on_test_table(spark: SparkSession) -> None:
         spark,
         df,
         ForecastSchema,
-        conf["input"]["forecast_on_test"]["database"],
-        conf["input"]["forecast_on_test"]["table"],
+        params.database,
+        "forecast_on_test",
         ["model"],
     )
 
@@ -115,8 +85,8 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
         spark,
         df,
         ForecastSchema,
-        conf["input"]["all_models_forecast"]["database"],
-        conf["input"]["all_models_forecast"]["table"],
+        params.database,
+        "all_models_forecast",
         ["model"],
     )
 
@@ -127,8 +97,8 @@ def launch_evaluation_task(spark: SparkSession):
     create_split_table(spark)
     create_forecast_on_test_table(spark)
     create_all_models_forecast_table(spark)
-    evaluation_task = EvaluationTask(spark, conf)
-    evaluation_task.launch()
+    evaluation_task = EvaluationTask(params)
+    evaluation_task.launch(spark)
     logging.info(f"Launching the {EvaluationTask.__name__} - done")
 
 
@@ -142,11 +112,7 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_metrics(spark: SparkSession):
-    df = read_delta_table(
-        spark,
-        conf["output"]["metrics"]["database"],
-        conf["output"]["metrics"]["table"],
-    )
+    df = read_delta_table(spark, params.database, "metrics")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -163,11 +129,7 @@ def test_metrics(spark: SparkSession):
 
 
 def test_best_models(spark: SparkSession):
-    df = read_delta_table(
-        spark,
-        conf["output"]["best_models"]["database"],
-        conf["output"]["best_models"]["table"],
-    )
+    df = read_delta_table(spark, params.database, "best_models")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
@@ -184,11 +146,7 @@ def test_best_models(spark: SparkSession):
 
 
 def test_forecast(spark: SparkSession):
-    df = read_delta_table(
-        spark,
-        conf["output"]["forecast"]["database"],
-        conf["output"]["forecast"]["table"],
-    )
+    df = read_delta_table(spark, params.database, "forecast")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
