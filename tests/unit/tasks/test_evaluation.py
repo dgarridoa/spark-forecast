@@ -64,7 +64,7 @@ def create_forecast_on_test_table(spark: SparkSession) -> None:
         ForecastSchema,
         params.database,
         "forecast_on_test",
-        ["model"],
+        partition_cols=["model"],
     )
 
 
@@ -87,7 +87,7 @@ def create_all_models_forecast_table(spark: SparkSession) -> None:
         ForecastSchema,
         params.database,
         "all_models_forecast",
-        ["model"],
+        partition_cols=["model"],
     )
 
 
