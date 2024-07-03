@@ -33,6 +33,7 @@ def write_delta_table(
     schema: StructType,
     database: str,
     table: str,
+    mode: str = "overwrite",
     partition_cols: Optional[list[str]] = None,
 ) -> None:
     if partition_cols:
@@ -44,7 +45,7 @@ def write_delta_table(
             .execute()
         )
         df.write.format("delta").partitionBy(*partition_cols).mode(
-            "overwrite"
+            mode
         ).option("partitionOverwriteMode", "dynamic").saveAsTable(
             f"{database}.{table}"
         )
@@ -55,9 +56,7 @@ def write_delta_table(
             .addColumns(schema)
             .execute()
         )
-        df.write.format("delta").saveAsTable(
-            f"{database}.{table}", mode="overwrite"
-        )
+        df.write.format("delta").saveAsTable(f"{database}.{table}", mode=mode)
 
 
 def extract_timeseries_from_pandas_dataframe(

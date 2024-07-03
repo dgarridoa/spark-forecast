@@ -38,7 +38,7 @@ class ModelTask:
             ForecastSchema,
             self.params.database,
             table_name,
-            ["model"],
+            partition_cols=["model"],
         )
 
     def fit_predict(self, df_train: DataFrame, steps: int) -> DataFrame:
