@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Union
 
 import darts.metrics
 import pandas as pd
@@ -89,7 +88,7 @@ class Evaluation:
         group_columns: list[str],
         time_column: str,
         target_column: str,
-        metrics: list[Union[str, MetricType]],
+        metrics: list[str] | list[MetricType] | list[str | MetricType],
         model_selection_metric: str,
         freq: str = "1D",
     ):
