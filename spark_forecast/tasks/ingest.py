@@ -2,9 +2,10 @@ import os
 
 import mlflow
 import pyspark.sql.functions as F
+from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-from spark_forecast.common import Task
+from spark_forecast.params import IngestionParams, Params, read_config
 from spark_forecast.schema import InputSchema, SalesSchema
 from spark_forecast.utils import (
     read_csv,
@@ -13,49 +14,47 @@ from spark_forecast.utils import (
 )
 
 
-class IngestionTask(Task):
-    def _read_csv(self) -> DataFrame:
+class IngestionTask:
+    def __init__(self, params: IngestionParams):
+        self.params = params
+
+    def read(self, spark: SparkSession) -> DataFrame:
         file_path = os.getenv("WORKSPACE_FILE_PATH")
         if file_path:
-            self.conf["input"][
-                "path"
-            ] = "file:{file_path}/{relative_path}".format(
-                file_path=file_path, relative_path=self.conf["input"]["path"]
+            self.params.path = "file:{file_path}/{relative_path}".format(
+                file_path=file_path, relative_path=self.params.path
             )
         df = read_csv(
-            self.spark,
-            self.conf["input"]["path"],
-            self.conf["input"]["sep"],
+            spark,
+            self.params.path,
+            self.params.sep,
             SalesSchema,
         )
 
-        if "stores" in self.conf:
-            df = df.filter(F.col("store").isin(self.conf["stores"]))
+        if self.params.stores:
+            df = df.filter(F.col("store").isin(self.params.stores))
         return df
 
-    def _write_delta_table(self, df: DataFrame) -> None:
+    def write(self, spark: SparkSession, df: DataFrame) -> None:
         write_delta_table(
-            self.spark,
-            df,
-            InputSchema,
-            self.conf["output"]["database"],
-            self.conf["output"]["table"],
+            spark, df, InputSchema, self.params.database, "input"
         )
 
-    def launch(self):
-        self.logger.info(f"Launching {self.__class__.__name__}")
-
+    def launch(self, spark: SparkSession):
         set_mlflow_experiment()
         with mlflow.start_run(run_name=self.__class__.__name__):
-            mlflow.set_tags(self.conf)
+            mlflow.set_tags(self.params.__dict__)
 
-        df = self._read_csv()
-        self._write_delta_table(df)
+        df = self.read(spark)
+        self.write(spark, df)
 
 
 def entrypoint():
-    task = IngestionTask()
-    task.launch()
+    config = read_config()
+    params = Params(**config)
+    spark = SparkSession.builder.getOrCreate()  # type: ignore
+    task = IngestionTask(params.ingestion)
+    task.launch(spark)
 
 
 if __name__ == "__main__":

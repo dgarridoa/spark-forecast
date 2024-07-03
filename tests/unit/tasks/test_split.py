@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
+from spark_forecast.params import SplitParams
 from spark_forecast.schema import InputSchema, SplitSchema
 from spark_forecast.tasks.split import SplitTask
 from spark_forecast.utils import read_delta_table, write_delta_table
@@ -14,22 +15,17 @@ from tests.utils import assert_pyspark_df_equal
 
 conf = {
     "env": "default",
-    "input": {
-        "database": "default",
-        "table": "input",
-    },
-    "output": {
-        "database": "default",
-        "table": "split",
-    },
+    "tz": "America/Santiago",
+    "execution_date": "2018-12-31",
+    "database": "default",
     "group_columns": ["store", "item"],
     "time_column": "date",
     "target_column": "sales",
-    "execution_date": "2018-12-31",
     "time_delta": 727,
     "test_size": 5,
     "freq": "1D",
 }
+params = SplitParams.model_validate(conf)
 
 
 def create_input_table(spark: SparkSession) -> None:
@@ -44,21 +40,15 @@ def create_input_table(spark: SparkSession) -> None:
         ),
         schema=InputSchema,
     )
-    write_delta_table(
-        spark,
-        df,
-        InputSchema,
-        conf["input"]["database"],
-        conf["input"]["table"],
-    )
+    write_delta_table(spark, df, InputSchema, params.database, "input")
 
 
 @pytest.fixture(scope="module", autouse=True)
 def launch_split_task(spark: SparkSession):
     logging.info(f"Launching {SplitTask.__name__}")
     create_input_table(spark)
-    ingestion_task = SplitTask(spark, conf)
-    ingestion_task.launch()
+    ingestion_task = SplitTask(params)
+    ingestion_task.launch(spark)
     logging.info(f"Launching the {SplitTask.__name__} - done")
 
 
@@ -72,9 +62,7 @@ def test_mlflow_tracking_server_is_not_empty():
 
 
 def test_split(spark: SparkSession):
-    df = read_delta_table(
-        spark, conf["output"]["database"], conf["output"]["table"]
-    )
+    df = read_delta_table(spark, params.database, "split")
     df_test = spark.createDataFrame(
         pd.DataFrame(
             {
