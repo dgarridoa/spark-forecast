@@ -22,6 +22,17 @@ def mape(epsilon: float = 0.0) -> MetricType:
     return mape
 
 
+METRICS = darts.metrics
+
+
+def metric_validator(metric: str) -> str:
+    try:
+        _ = getattr(METRICS, metric)
+    except AttributeError:
+        raise ValueError(f"Metric {metric} not found in {METRICS}")
+    return metric
+
+
 class Metrics:
     def __init__(
         self,
