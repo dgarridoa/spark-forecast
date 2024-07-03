@@ -8,6 +8,7 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Generator
 
 import mlflow
 import pytest
@@ -73,7 +74,7 @@ class DBUtilsFixture:
 
 
 @pytest.fixture(scope="session")
-def spark() -> SparkSession:
+def spark() -> Generator[SparkSession, None, None]:
     """
     This fixture provides preconfigured SparkSession with Hive and Delta support.
     After the test session, temporary warehouse directory is deleted.
