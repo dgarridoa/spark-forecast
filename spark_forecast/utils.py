@@ -59,6 +59,16 @@ def write_delta_table(
         df.write.format("delta").saveAsTable(f"{database}.{table}", mode=mode)
 
 
+def get_table_info(
+    spark: SparkSession, database: str, table: str
+) -> dict[str, str]:
+    table_info = spark.sql(f"DESCRIBE EXTENDED {database}.{table}")
+    table_info_dict = {
+        row["col_name"]: row["data_type"] for row in table_info.collect()
+    }
+    return table_info_dict
+
+
 def extract_timeseries_from_pandas_dataframe(
     df: pd.DataFrame, time_column: str, target_column: str, freq: str = "D"
 ) -> TimeSeries:
