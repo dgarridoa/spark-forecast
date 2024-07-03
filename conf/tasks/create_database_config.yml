@@ -1,7 +1,0 @@
-env:
-  dev:
-    database: "dev"
-  staging:
-    database: "staging"
-  prod:
-    database: "prod"
