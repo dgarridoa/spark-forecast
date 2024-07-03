@@ -36,9 +36,7 @@ resources:
             entry_point: "create_database"
             parameters:
               - "--conf-file"
-              - "/Workspace${workspace.root_path}/files/conf/tasks/create_database_config.yml"
-              - "--env"
-              - "${bundle.target}"
+              - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "ingest"
@@ -50,9 +48,7 @@ resources:
              entry_point: "ingest"
              parameters:
              - "--conf-file"
-             - "/Workspace${workspace.root_path}/files/conf/tasks/ingest_config.yml"
-             - "--env"
-             - "${bundle.target}"
+             - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "split"
@@ -64,9 +60,7 @@ resources:
              entry_point: "split"
              parameters:
              - "--conf-file"
-             - "/Workspace${workspace.root_path}/files/conf/tasks/split_config.yml"
-             - "--env"
-             - "${bundle.target}"
+             - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "exponential_smoothing"
@@ -80,9 +74,7 @@ resources:
             - "--model-name"
             - "ExponentialSmoothing"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/exponential_smoothing_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "autoarima"
@@ -96,9 +88,7 @@ resources:
             - "--model-name"
             - "AutoARIMA"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/autoarima_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "prophet"
@@ -112,9 +102,7 @@ resources:
             - "--model-name"
             - "Prophet"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/prophet_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "xgboost"
@@ -128,9 +116,7 @@ resources:
             - "--model-name"
             - "XGBModel"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/xgboost_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "random_forest"
@@ -144,9 +130,7 @@ resources:
             - "--model-name"
             - "RandomForest"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/random_forest_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "croston"
@@ -160,9 +144,7 @@ resources:
             - "--model-name"
             - "Croston"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/croston_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "mean"
@@ -176,9 +158,7 @@ resources:
             - "--model-name"
             - "NaiveMean"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/mean_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "moving_average"
@@ -192,9 +172,7 @@ resources:
             - "--model-name"
             - "NaiveMovingAverage"
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/moving_average_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
         - task_key: "evaluation"
@@ -213,9 +191,7 @@ resources:
             entry_point: "evaluation"
             parameters:
             - "--conf-file"
-            - "/Workspace${workspace.root_path}/files/conf/tasks/evaluation_config.yml"
-            - "--env"
-            - "${bundle.target}"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
           libraries:
             - whl: ./dist/*.whl
 targets:
