@@ -27,6 +27,7 @@ from pathlib import Path
 import yaml
 from pyspark.sql import SparkSession
 
+from spark_forecast.params import Params
 from spark_forecast.tasks.split import SplitTask
 
 # COMMAND ----------
@@ -40,10 +41,11 @@ spark.sql("USE CATALOG `demand-forecast`")
 
 # COMMAND ----------
 
-conf_file = f"{project_root}/conf/tasks/split_config.yml"
-conf = yaml.safe_load(Path(project_root, conf_file).read_text())["env"]["dev"]
+conf_file = f"{project_root}/conf/dev_config.yml"
+conf = yaml.safe_load(Path(project_root, conf_file).read_text())
+params = Params(**conf)
 
 # COMMAND ----------
 
-task = SplitTask(spark, conf)
-task.launch()
+task = SplitTask(params.split)
+task.launch(spark)
