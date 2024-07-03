@@ -8,8 +8,6 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
-from unittest.mock import patch
 
 import mlflow
 import pytest
@@ -138,19 +136,3 @@ def mlflow_local():
     if Path(registry_uri).exists():
         Path(registry_uri).unlink()
     logging.info("Test session finished, unrolling the MLflow instance")
-
-
-@pytest.fixture(scope="session", autouse=True)
-def dbutils_fixture() -> Iterator[None]:
-    """
-    This fixture patches the `get_dbutils` function.
-    Please note that patch is applied on a string name of the function.
-    If you change the name or location of it, patching won't work.
-    :return:
-    """
-    logging.info("Patching the DBUtils object")
-    with patch(
-        "spark_forecast.common.get_dbutils", lambda _: DBUtilsFixture()
-    ):
-        yield
-    logging.info("Test session finished, patching completed")
