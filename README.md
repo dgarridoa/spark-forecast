@@ -143,26 +143,39 @@ Workflows definition are in the `databricks.yml` file. It has the `<target>-dema
 
 ### Parameters
 
-Each task in the workflow has its own parameter file in `conf/tasks/<task-name>_config.yml`. This parameter is used in the `python_wheel_task` section in the `databricks.yml` file, as value in `--conf-file /Workspace${workspace.root_path}/files/<relative_path>` parameter.
+Each task in the workflow uses a parameter file in `conf/<target>_config.yml`. This file path is used in the `python_wheel_task` section in the `databricks.yml` file, as value in `--conf-file /Workspace${workspace.root_path}/files/<relative_path>` parameter.
 
 Common parameters to all tasks.
+- `env`: String, it represent the environment, it can be `dev`, `staging` and `prod`.
+- `tz`: String, time zone (optional), is used to compute the `execution_date` when it is not set. By default, it is set to 'America/Santiago'. This parameter is useful in order to avoid computing the wrong `execution_date` when the pipeline is executed between the boundary that separates two days.
+- `execution_date`: String, execution date in format `"<yyyy>-<mm>-<dd>"`, it also works without quotes. If not specified the current date is used. If specified is recommended to set a Monday; otherwise, the last Monday from the current date will be used. Additionally, is used as date boundary, where `date <= execution_date - 1`.
+- `database`: String, the database to read/write, it can be  `dev`, `staging` and `prod`.
 
-- `env`: Dictionary with the environments. There are three environment, `dev`, `staging` and `prod`. This values are used in the `"--env <env>"` parameter, located in the `python_wheel_task` section in the `databricks.yml` file. The `Task` abstract class uses this paremeter to extract environment specific parameters from the file.
-- `execution_date`: String, execution date in format `"<yyyy>-<mm>-<dd>"`. If specified is recommended to set a Monday; otherwise, the last Monday from the current date will be used. Additionally, is used as date boundary, where `date <= execution_date - 1`.
-- `input|output`: Dictionary, every task has to read some input and write some output. If there are multiple inputs or outputs, this parameter is a two-level dictionary, where the keys are the names of the tables; otherwise, it is a one-level dictionary where table names are omitted. Depending on the source format, it could have the following keys: The `path` and `sep` when the source is a CSV, used to locate the file and to indicate column separator character; the `database` and `table` name where it will be written as delta table.
-
-Task specific parameters.
-
-- `time_delta`: Integer, used to filter the data by a time window, with date betwen `[start_date, end_date]`, where `end_date = execution_date - 1` and `start_date = execution_date - time_delta`.
+Common parameters to some tasks.
 - `group_columns`: List of string, used to identify a serie as unique.
 - `time_column`: String, time column to use as serie time index.
 - `target_column`: String, target column to use as serie value.
+
+Ingestion task parametes.
+- `path`: String, relative path where the CSV sales files is deployed.
+- `sep`: String, column separator character.
+- `stores`: List of integers, optional. If specified, only these stores will be selected.
+
+Split task parameters:
+- `time_delta`: Integer, used to filter the data by a time window, with date betwen `[start_date, end_date]`, where `end_date = execution_date - 1` and `start_date = execution_date - time_delta`.
+- `test_size`: Integer, number of past days since `execution_date - 1` that are used as part of the test set.
+- `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
+
+Model task parameters:
+- `model_cls`: String, must be the name of a model class present in `MODELS` (`darts.models` module), a reference to this can be found in the file `spark_forecast/model.py`. This is used as the `--model-name <model-name>` argument in the `python_wheel_task` related to forecasting.
+- `model_params`: Dictionary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
+- `test_size`: Integer, number of days since the last date on train set to forecast.
+- `steps`: Integer, number of days since the `execution_date` to forecast.
+- `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
+
+Evaluation task parameters:
 - `metrics`: List of string, list of metrics to compute. By the moment, those names should match the name of a function in the `darts.metrics` module.
 - `model_selection_metric`: String, metric from `metrics` used to select the best model per serie, the critera is the one with minimum value.
-- `test_size`: Integer, number of past days since `execution_date - 1` that are used as part of the test set.
-- `model_name`: String, must be the name of a model class present in `MODELS` (`darts.models` module), a reference to this can be found in the file `spark_forecast/model.py`. This is used as the `--model-name <model-name>` argument in the `python_wheel_task` related to forecasting.
-- `model_params`: Dictionary, optional per forecast model, key-value pairs used to instantiate a forecasting model.
-- `steps`: Integer, number of days since the `execution_date` to forecast.
 - `freq`: String, represents the frequency of the pandas DatetimeIndex, where the value `1D` means daily frequency.
 
 ## Tasks
@@ -179,15 +192,15 @@ Overwrite the `input` table with the data that comes the CSV file `data/train.cs
 
 ### split
 
-Overwrite the `split` table. This table comes from the `input` and has the same level of granularity. The main functionality of this task is to split the dataset in training and testing sets, and guarante continuity of each time serie, where null values are filled by zero. Each serie is characterized by the `group_columns` parameter with value `["store", "item"]`, columns used to identify a serie as unique; the `time_column` parameter to identifies the column to use as time index, with value `"date"`; and the `target_column` parameter to identifies the column to use as values of the serie, with value `"sales"`. The `test_size` parameter is used to define the rows that are part of the test set, the sales of the last `test_size` days are part of this set, the value used is 14 days.
+The main functionality of this task is to split the dataset in training and testing sets, and guarante continuity of each time serie, where null values are filled by zero. This table comes from the `sales` table and produce the `split` table with the same level of granularity. Each serie is characterized by the `group_columns` parameter with value `["store", "item"]`, columns used to identify a serie as unique; the `time_column` parameter to identifies the column to use as time index, with value `"date"`; and the `target_column` parameter to identifies the column to use as values of the serie, with value `"sales"`. The `test_size` parameter is used to define the rows that are part of the test set, the sales of the last `test_size` days are part of this set, the value used is 14 days.
 
 ### models
 
-All model tasks, for instance, `exponential_smoothing`, overwrite the partition `model=<model-name>` in the tables `forecast_on_test` and `all_models_forecast`. It uses `split` table as input. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the`split` task. The `model_params` parameter has model specific hyperparameters as key-value pairs. The `test_size` parameter is used to know how many periods to forecast after training on the training set, this forecast is stored in the `forecast_on_test` table. Similarly, the `steps` parameter is used to know how many periods to forecast after training on the full dataset, this forecast is stored in the `all_models_forecast` table.
+This task performs forecasting on the test set and into the future. All model tasks, such as `exponential_smoothing` with task paramenter `--model-name=ExponentialSmoothing`, overwrite the `model=<model-name>` partitions in the `forecast_on_test` and `all_models_forecast` tables. The `split` table is used as input for this task. Parameters like `group_columns`, `time_column`, and `target_column` are used to define a time series, consistent with the values in the `split` task. The `model_params` parameter contains model-specific hyperparameters as key-value pairs. The `test_size` parameter determines the number of periods to forecast after training on the training set. This forecast is stored in the `forecast_on_test` table. Similarly, the `steps` parameter specifies the number of periods to forecast after training on the full dataset. This forecast is stored in the `all_models_forecast` table.
 
 ### evaluation
 
-Overwrite the tables `metrics`, `best_models` and `forecast`. As input it uses tables `split`, `forecast_on_test` and `all_models_forecast`. The parameters `group_columns`, `time_column` and `target_column` are used to characterize a time serie with the same values as the `split` and `model` tasks. The `metrics` parameter has a list of metrics to compute from the input tables `split` (where split column is equal to test) and `forecast_on_test`, the result is written to the `metrics` table, where the metrics computed are `["mape", "rmse", "mae"]` and them must be in `darts.metrics` module . The `model_selection_metric` parameter is used to filter the table `metric` and choose the best model per store-item, the critera is the one with minimum value, this result is written in the `best_models` table. Finnally, the `forecast` table is written, it is produced by the inner join between `all_models_forecast` and `best_models`, with the goal of having only the forecast of the best model per store-item.
+This task executes the champion challenge, selecting the optimal model for each series and generating the best forecast. It overwrites the delta tables `metrics`, `best_models`, and `forecast`. The input for this task comes from the `split`, `forecast_on_test`, and `all_models_forecast` tables.  Parameters such as `group_columns`, `time_column`, and `target_column` are used to define a time series, consistent with the values in the `split` and `model` tasks. The `metrics` parameter contains a list of metrics to be calculated from the `split` (where the split column equals test) and `forecast_on_test` input tables. The results are written to the `metrics` table, where the computed metrics include `["rmse", "mae", "mape"]` and must be present in the `darts.metrics` module. The `model_selection_metric` parameter is used to filter the `metric` table and select the best model per series, based on the minimum value criteria. The `mape` is used for this purpose, and the result is written to the `best_models` table. Finally, the `forecast` table is updated. This table is generated by the inner join between `all_models_forecast` and `best_models`, with the aim of retaining only the forecast of the best model per serie.
 
 ## Data lineage
 
